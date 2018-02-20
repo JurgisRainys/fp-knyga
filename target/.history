@@ -1,0 +1,2 @@
+;reload; set _root_.org.jetbrains.sbt.StructureKeys.sbtStructureOptions in Global := "download resolveClassifiers resolveSbtClassifiers" ;*/*:dumpStructureTo C:/Users/jurgis/AppData/Local/Temp/sbt-structure.xml; session clear-all
+all {file:/C:/work/scala/fp-in-scala/}fp-in-scala/products {file:/C:/work/scala/fp-in-scala/}fp-in-scala/test:products
