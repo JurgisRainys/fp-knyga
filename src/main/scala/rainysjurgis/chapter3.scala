@@ -1,4 +1,5 @@
 package rainysjurgis
+import scala.annotation.tailrec
 
 object chapter3 {
   sealed trait List[+A]
@@ -6,18 +7,40 @@ object chapter3 {
   case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
   object List {
-    def sum(ints: List[Int]): Int = ints match {
-      case Nil => 0
-      case Cons(x, xs) => x + sum(xs)
-    }
-    def product(ds: List[Double]): Double = ds match {
-      case Nil => 1.0
-      case Cons(0.0, _) => 0.0
-      case Cons(x, xs) => x * product(xs)
-    }
+
     def apply[A](as: A*): List[A] =
       if (as.isEmpty) Nil
       else Cons(as.head, apply(as.tail: _*))
+
+    def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B) : B = as match {
+      case Nil => z
+      case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+    }
+
+    def foldLeft[A,B](as: List[A], z: B)(f: (B, A) => B): B = {
+      @tailrec
+      def loop(list: List[A], acc: B): B = list match {
+        case Nil => acc
+        case Cons(h, t) => loop(t, f(acc, h))
+      }
+
+      loop(as, z)
+    }
+
+    def sum(ns: List[Int]) =
+      foldRight(ns, 0)((x, y) => x + y)
+
+    def sumFoldLeft(ns: List[Int]) =
+      foldLeft(ns, 0)((x, y) => x + y)
+
+    def Ex38() =
+      foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_))
+
+    def product(ns: List[Double]) =
+      foldRight(ns, 1.0)(_ * _)
+
+    def productFoldLeft(ns: List[Double]) =
+      foldLeft(ns, 1.0)(_ * _)
 
     def tail[A](list: List[A]): List[A] = list match {
       case Nil => List[A]()
@@ -30,7 +53,7 @@ object chapter3 {
     }
 
     def drop[A](list: List[A], n: Int): List[A] = {
-      @annotation.tailrec
+      @tailrec
       def loop(n: Int, list: List[A]): List[A] =
         if (n <= 0) list
         else loop(n - 1, tail(list))
@@ -38,23 +61,116 @@ object chapter3 {
       loop(n, list)
     }
 
-//    def dropWhile[A](l: List[A], f: A => Boolean): List[A] = {
-//      @annotation.tailrec
-//      def loop[A](l: List[A], resultList: List[A]) = l match {
-//        case Nil => resultList
-//        case Cons(h, t) => {
-//          if ()
-//        }
-//      }
-//
-//    }
+    //grazina lista is priesingos puses
+    def dropWhile[A](l: List[A], f: A => Boolean): List[A] = {
+      @tailrec
+      def loop(l: List[A], resultList: List[A]): List[A] = l match {
+        case Nil => resultList
+        case Cons(h, t) => {
+          if (f(h)) loop(t, resultList)
+          else loop(t, Cons(h, resultList))
+        }
+      }
+
+      loop(l, List[A]())
+    }
+
+    //grazina is geros puses, bet ne tailrec
+    def dropWhile2[A](l: List[A])( f: A => Boolean): List[A] = {
+      def loop(l: List[A], resultList: List[A]): List[A] = l match {
+        case Nil => List[A]()
+        case Cons(h, t) => {
+          val prevRes = loop(t, resultList)
+          if (f(h)) prevRes
+          else Cons(h, prevRes)
+        }
+      }
+
+      loop(l, List[A]())
+    }
+
+    def init[A](l: List[A]): List[A] = {
+      @tailrec
+      def loop(l: List[A], resultList: List[A]): List[A] = l match {
+        case Nil => Nil
+        case Cons(h, t) =>
+          t match {
+            case Nil => resultList
+            case _ => loop(t, Cons(h, resultList))
+          }
+      }
+
+      loop(l, List[A]())
+    }
+
+    def length[A](as: List[A]): Int = {
+      foldRight(as, 0)((_, acc) => acc + 1)
+    }
+
+    def lengthFoldLeft[A](as: List[A]): Int = {
+      foldLeft(as, 0)((acc, _) => acc + 1)
+    }
+
+    def reverse[A](list: List[A]): List[A] = {
+      foldLeft(list, List[A]())((t, h) => (Cons(h, t)))
+    }
+
+    def append[A](list1: List[A], list2: List[A]) = {
+      foldRight(list1, list2)((h, list) => Cons(h, list))
+    }
+
+    def mergeLists[A](list: List[List[A]]): List[A] = {
+      foldLeft(list, List[A]())((h, acc) => append(h, acc))
+    }
+
+    def add1ToEach(list: List[Int]): List[Int] = {
+      foldRight(list, List[Int]())((num, acc) => Cons(num + 1, acc))
+    }
+
+    def DoubleToStringList(list: List[Double]): List[String] = {
+      foldRight(list, List[String]())((num, acc) => Cons(num.toString()+ "xd", acc))
+    }
+
+    def map[A, B](as: List[A])(f: A => B): List[B] = {
+      foldRight(as, List[B]())((h, acc) => Cons(f(h), acc))
+    }
+
+    def filter[A](as: List[A])(f : A => Boolean): List[A] = {
+      foldRight(as, List[A]())((h, acc) => if (f(h)) Cons(h, acc) else acc)
+    }
   }
 
+  def lowerThan5(num: Int): Boolean =
+    num < 5
+
   def test() = {
-    val ls =List(1, 2, 3, 4)
+    val ls = List(1, 7, 2, 3, 4, 6, 8)
+    val ls2 = List(22, 22)
+    val ls3 = List(33, 33)
+    val ls4 = List(44, 44)
+    val ls5 = List(ls2, ls3, ls4)
+    val lsd: List[Double] = List(1, 7, 2, 3, 4, 6, 8)
 //    println(List.tail(ls))
 //    println(List.setHead(ls, 4))
 //    println(List.drop(ls, 2))
+//    println(List.dropWhile(ls, lowerThan5))
+//    println(List.dropWhile2(ls)(lowerThan5))
+//    println(List.Ex38())
+//    println(List.length(ls))
+//    println(List.sum(ls))
+//    println(List.sumFoldLeft(ls))
+//    println(List.product(lsd))
+//    println(List.productFoldLeft(lsd))
+//    println(List.length(ls))
+//    println(List.lengthFoldLeft(ls))
+//    println(List.append(ls, ls2))
+//    println(List.mergeLists(ls5))
+//    println(List.add1ToEach(ls))
+//    println(List.DoubleToStringList(lsd))
+//    println(List.map(lsd)(_.toString() + "xd"))
+//    println(List.DoubleToStringList(lsd))
+//    println(List.filter(ls)(lowerThan5(_)))
+    println(List.filter(ls)(lowerThan5(_)))
 
   }
 }
