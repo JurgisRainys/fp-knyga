@@ -138,6 +138,52 @@ object chapter3 {
     def filter[A](as: List[A])(f : A => Boolean): List[A] = {
       foldRight(as, List[A]())((h, acc) => if (f(h)) Cons(h, acc) else acc)
     }
+
+    def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] = {
+      foldRight(as, List[B]())((h, acc) => foldRight(f(h), acc)(Cons(_, _)))
+    }
+
+    def filter2[A](as: List[A])(f: A => Boolean): List[A] = {
+      flatMap(as)(h => if (f(h)) List[A](h) else List[A]())
+    }
+
+    def zipWith[A](as1: List[A], as2: List[A])( f: (A, A) => A ): List[A] = {
+      @tailrec
+      def loop(as1: List[A], as2: List[A], acc: List[A]): List[A] = as1 match {
+          case Nil => acc
+          case Cons(h1, t1) =>
+            as2 match {
+              case Nil => acc
+              case Cons(h2, t2) => {
+                loop(t1, t2, Cons(f(h1, h2), acc))
+              }
+            }
+        }
+
+      loop(as1, as2, List[A]())
+    }
+
+    def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+      def loop(sup: List[A], sub2: List[A], result: Boolean): Boolean = sup match {
+        case Nil =>
+          if (length(sub2) > 0) false
+          else true
+        case Cons(h, t) =>
+          sub2 match {
+            case Nil => result
+            case _ =>
+              if (length(filter(sub2)(_ == h)) > 0) loop(t, tail(sub2), true)
+              else
+                if (result) loop(sup, sub, result = false)
+                else loop(t, sub, result = false)
+          }
+
+      }
+
+      if (length(sup) >= length(sub))
+        loop(sup, sub, result = false)
+      else false
+    }
   }
 
   def lowerThan5(num: Int): Boolean =
@@ -148,6 +194,7 @@ object chapter3 {
     val ls2 = List(22, 22)
     val ls3 = List(33, 33)
     val ls4 = List(44, 44)
+    val ls6 = List(44, 23, 11, 44, 44, 11)
     val ls5 = List(ls2, ls3, ls4)
     val lsd: List[Double] = List(1, 7, 2, 3, 4, 6, 8)
 //    println(List.tail(ls))
@@ -170,7 +217,19 @@ object chapter3 {
 //    println(List.map(lsd)(_.toString() + "xd"))
 //    println(List.DoubleToStringList(lsd))
 //    println(List.filter(ls)(lowerThan5(_)))
-    println(List.filter(ls)(lowerThan5(_)))
+//    println(List.filter2(ls)(lowerThan5(_)))
+//    println(List.flatMap(List(1,2,3))(i => List(i,i)))
+//    println(List.zipWith(ls3, ls4)(_ + _))
+    println(List.hasSubsequence(ls6, ls4))
+  }
 
+  sealed trait Tree[+A]
+  case class Leaf[A](value: A) extends Tree[A]
+  case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
+  
+  object Tree {
+    def size[A](tree: Tree[A]): Int = {
+
+    }
   }
 }
