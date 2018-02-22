@@ -1,4 +1,9 @@
-[0m[[0m[31merror[0m] [0m[0mC:\work\scala\fp-in-scala\src\main\scala\rainysjurgis\chapter3.scala:127:55: not found: value h[0m
-[0m[[0m[31merror[0m] [0m[0m      foldRight(list, List[Int]())((num, acc) => Cons(h + 1, acc))[0m
-[0m[[0m[31merror[0m] [0m[0m                                                      ^[0m
-[0m[[0m[31merror[0m] [0m[0mone error found[0m
+[0m[[0m[33mwarn[0m] [0m[0mC:\work\scala\fp-in-scala\src\main\scala\rainysjurgis\chapter3.scala:323:36: match may not be exhaustive.[0m
+[0m[[0m[33mwarn[0m] [0m[0mIt would fail on the following input: EmptyTree[0m
+[0m[[0m[33mwarn[0m] [0m[0m      def loop(tree: Tree[A]): B = tree match {[0m
+[0m[[0m[33mwarn[0m] [0m[0m                                   ^[0m
+[0m[[0m[33mwarn[0m] [0m[0mC:\work\scala\fp-in-scala\src\main\scala\rainysjurgis\chapter3.scala:335:38: match may not be exhaustive.[0m
+[0m[[0m[33mwarn[0m] [0m[0mIt would fail on the following input: EmptyTree[0m
+[0m[[0m[33mwarn[0m] [0m[0m      def loop(tree: Tree[A]): Int = tree match {[0m
+[0m[[0m[33mwarn[0m] [0m[0m                                     ^[0m
+[0m[[0m[33mwarn[0m] [0m[0mtwo warnings found[0m

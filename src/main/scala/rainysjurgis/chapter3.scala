@@ -2,7 +2,25 @@ package rainysjurgis
 import scala.annotation.tailrec
 
 object chapter3 {
-  sealed trait List[+A]
+  sealed trait List[+A] {
+    def isEmpty: Boolean = this match {
+      case Nil => true
+      case _ => false
+    }
+
+    def isLongerThan[B](other: List[B]): Boolean = {
+      @tailrec
+      def loop(thisList: List[A], otherList: List[B]): Boolean = {
+        val h1 = List.head(thisList)
+        val h2 = List.head(otherList)
+        if (h1.isEmpty || h2.isEmpty) !h1.isEmpty
+        else loop(List.tail(thisList), List.tail(otherList))
+      }
+
+      loop(this, other)
+    }
+
+  }
   case object Nil extends List[Nothing]
   case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
@@ -11,6 +29,16 @@ object chapter3 {
     def apply[A](as: A*): List[A] =
       if (as.isEmpty) Nil
       else Cons(as.head, apply(as.tail: _*))
+
+    def listFromSeq[A](s: Seq[A]): List[A] = {
+      @tailrec
+      def loop[B](s: Seq[B], acc: List[B]): List[B] = {
+        if (s.length <= 0) acc
+        else loop(s.tail, Cons(s.head, acc))
+      }
+
+      loop(s, List[A]())
+    }
 
     def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B) : B = as match {
       case Nil => z
@@ -45,6 +73,11 @@ object chapter3 {
     def tail[A](list: List[A]): List[A] = list match {
       case Nil => List[A]()
       case Cons(_, t) => t
+    }
+
+    def head[A](list: List[A]): Option[A] = list match {
+      case Nil => None
+      case Cons(h, _) => Some(h)
     }
 
     def setHead[A](list: List[A], newVal: A): List[A] = list match {
@@ -147,6 +180,7 @@ object chapter3 {
       flatMap(as)(h => if (f(h)) List[A](h) else List[A]())
     }
 
+
     def zipWith[A](as1: List[A], as2: List[A])( f: (A, A) => A ): List[A] = {
       @tailrec
       def loop(as1: List[A], as2: List[A], acc: List[A]): List[A] = as1 match {
@@ -165,9 +199,7 @@ object chapter3 {
 
     def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
       def loop(sup: List[A], sub2: List[A], result: Boolean): Boolean = sup match {
-        case Nil =>
-          if (length(sub2) > 0) false
-          else true
+        case Nil => sub2.isEmpty
         case Cons(h, t) =>
           sub2 match {
             case Nil => result
@@ -177,10 +209,27 @@ object chapter3 {
                 if (result) loop(sup, sub, result = false)
                 else loop(t, sub, result = false)
           }
-
       }
 
       if (length(sup) >= length(sub))
+        loop(sup, sub, result = false)
+      else false
+    }
+
+    def hasSubsequence2[A](sup: List[A], sub: List[A]): Boolean = {
+      def loop(sup: List[A], sub2: List[A], result: Boolean): Boolean = sup match {
+        case Nil => sub2.isEmpty
+        case Cons(h, t) => sub2 match {
+            case Nil => result
+            case _ =>
+              if (!(filter(sub2)(_ == h)).isEmpty) loop(t, tail(sub2), true)
+              else
+              if (result) loop(sup, sub, result = false)
+              else loop(t, sub, result = false)
+          }
+      }
+
+      if (sup.isLongerThan((sub)))
         loop(sup, sub, result = false)
       else false
     }
@@ -193,8 +242,8 @@ object chapter3 {
     val ls = List(1, 7, 2, 3, 4, 6, 8)
     val ls2 = List(22, 22)
     val ls3 = List(33, 33)
-    val ls4 = List(44, 44)
-    val ls6 = List(44, 23, 11, 44, 44, 11)
+    val ls4 = List(44, 44, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+    val ls6 = List(44, 23, 11, 44, 44, 11, 44)
     val ls5 = List(ls2, ls3, ls4)
     val lsd: List[Double] = List(1, 7, 2, 3, 4, 6, 8)
 //    println(List.tail(ls))
@@ -221,14 +270,105 @@ object chapter3 {
 //    println(List.flatMap(List(1,2,3))(i => List(i,i)))
 //    println(List.zipWith(ls3, ls4)(_ + _))
     println(List.hasSubsequence(ls6, ls4))
+    println(List.hasSubsequence2(ls6, ls4))
   }
 
-  sealed trait Tree[+A]
+  sealed trait Tree[+A] {
+    def isEmptyTree(): Boolean = this match {
+      case EmptyTree => true
+      case _ => false
+    }
+
+    def printTree(): String = {
+      Tree.iterateTree(this)(x => x.toString())(_ + " :: " + _)
+    }
+  }
+  case object EmptyTree extends Tree[Nothing]
   case class Leaf[A](value: A) extends Tree[A]
   case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
-  
+
   object Tree {
+    def generateTree[A](treeList: List[Tree[A]]): Tree[A] = {
+      if (List.length(treeList) > 1) generateTree(makeBranches(treeList, List[Tree[A]]()))
+      else treeList match {
+        case Cons(h, t) => h
+        case Nil => EmptyTree
+      }
+    }
+
+    @tailrec
+    def makeBranches[A](treeList: List[Tree[A]], resultBranches: List[Tree[A]]): List[Tree[A]] = {
+      val left = List.head(treeList)
+      left match {
+        case None => resultBranches
+        case Some(leftBranch) =>
+          val right = List.head(List.tail(treeList))
+          right match {
+            case None => Cons(Branch(leftBranch, EmptyTree), resultBranches)
+            case Some(rightBranch) =>
+              makeBranches(List.tail(List.tail(treeList)), Cons(Branch(leftBranch, rightBranch), resultBranches))
+          }
+      }
+    }
+
+    def apply[A](as: A*): Tree[A] = {
+      if (as.isEmpty) EmptyTree
+      else {
+        val leaves = List.map(List.listFromSeq(as))(Leaf(_))
+        generateTree(leaves)
+      }
+    }
+
+    def iterateTree[A, B](tree: Tree[A])(f1: A => B)(f2: (B, B)=> B): B = {
+      def loop(tree: Tree[A]): B = tree match {
+        case Leaf(x) => f1(x)
+        case Branch(left, right) =>
+          if (left.isEmptyTree()) loop(right)
+          else if (right.isEmptyTree()) loop(left)
+          else f2(loop(left),loop(right))
+      }
+
+      loop(tree)
+    }
+
     def size[A](tree: Tree[A]): Int = {
+      def loop(tree: Tree[A]): Int = tree match {
+        case Leaf(_) => 1
+        case Branch(left, right) =>
+          if (left.isEmptyTree()) loop(right)
+          else if (right.isEmptyTree()) loop(left)
+          else loop(left) + loop(right)
+        }
+
+      loop(tree)
+    }
+
+    def size2[A](tree: Tree[A]): Int = {
+      iterateTree(tree)(_ => 1)((x, y) => x + y)
+    }
+
+    def maximum(tree: Tree[Int]): Int = {
+      iterateTree(tree)(num => num)((x, y) => if (x > y) x else y)
+    }
+
+    def depth[A](tree: Tree[A]): Int = {
+      iterateTree(tree)(_ => 0)((x, y) => if (x > y) (x + 1) else (y + 1))
+    }
+
+    def map[A, B](tree: Tree[A])(f: A => B): Tree[B] = {
+      iterateTree(tree)(x => Tree(f(x)))((x, y) => Branch(x, y))
+    }
+
+    def test2() = {
+      val t0 = Tree.apply(1, 2, 3)
+      val t1 = Tree.apply(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+      val t2 = Tree.apply(1, 12, 3, 4, 5, 6, 7, 8, 9, 10, 2, 6, 4, 6, 11, 2, 6)
+//      println(Tree.maximum(t2))
+//      println(Tree.size(t1))
+//      println(Tree.size2(t1))
+      //println(Tree.depth(t2))
+//      println(t0.printTree())
+//      println(Tree.map(t0)(_ + 10).printTree())
 
     }
   }
