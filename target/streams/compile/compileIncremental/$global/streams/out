@@ -2,28 +2,28 @@
 [0m[[0m[0mdebug[0m] [0m[0mInitial source changes: [0m
 [0m[[0m[0mdebug[0m] [0m[0m	removed:Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0m	added: Set()[0m
-[0m[[0m[0mdebug[0m] [0m[0m	modified: Set(C:\work\scala\fp-in-scala\src\main\scala\rainysjurgis\chapter3.scala)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	modified: Set(C:\work\scala\fp-in-scala\src\main\scala\rainysjurgis\chapter4.scala)[0m
 [0m[[0m[0mdebug[0m] [0m[0mInvalidated products: Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0mExternal API changes: API Changes: Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0mModified binary dependencies: Set()[0m
-[0m[[0m[0mdebug[0m] [0m[0mInitial directly invalidated classes: Set(rainysjurgis.chapter3.EmptyTree, rainysjurgis.chapter3.Cons, rainysjurgis.chapter3.Tree, rainysjurgis.chapter3.Leaf, rainysjurgis.chapter3.List, rainysjurgis.chapter3.Nil, rainysjurgis.chapter3, rainysjurgis.chapter3.Branch)[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial directly invalidated classes: Set(rainysjurgis.chapter4.Option, rainysjurgis.chapter4.Some, rainysjurgis.chapter4, rainysjurgis.chapter4.None, rainysjurgis.chapter4.Right, rainysjurgis.chapter4.Left, rainysjurgis.chapter4.Either)[0m
 [0m[[0m[0mdebug[0m] [0m[0m[0m
 [0m[[0m[0mdebug[0m] [0m[0mSources indirectly invalidated by:[0m
 [0m[[0m[0mdebug[0m] [0m[0m	product: Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0m	binary dep: Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0m	external source: Set()[0m
-[0m[[0m[0mdebug[0m] [0m[0mAll initially invalidated classes: Set(rainysjurgis.chapter3.EmptyTree, rainysjurgis.chapter3.Cons, rainysjurgis.chapter3.Tree, rainysjurgis.chapter3.Leaf, rainysjurgis.chapter3.List, rainysjurgis.chapter3.Nil, rainysjurgis.chapter3, rainysjurgis.chapter3.Branch)[0m
-[0m[[0m[0mdebug[0m] [0m[0mAll initially invalidated sources:Set(C:\work\scala\fp-in-scala\src\main\scala\rainysjurgis\chapter3.scala)[0m
+[0m[[0m[0mdebug[0m] [0m[0mAll initially invalidated classes: Set(rainysjurgis.chapter4.Option, rainysjurgis.chapter4.Some, rainysjurgis.chapter4, rainysjurgis.chapter4.None, rainysjurgis.chapter4.Right, rainysjurgis.chapter4.Left, rainysjurgis.chapter4.Either)[0m
+[0m[[0m[0mdebug[0m] [0m[0mAll initially invalidated sources:Set(C:\work\scala\fp-in-scala\src\main\scala\rainysjurgis\chapter4.scala)[0m
 [0m[[0m[0minfo[0m] [0m[0mCompiling 1 Scala source to C:\work\scala\fp-in-scala\target\scala-2.12\classes ...[0m
 [0m[[0m[0mdebug[0m] [0m[0mGetting org.scala-sbt:compiler-bridge_2.12:1.0.3:compile for Scala 2.12.4[0m
 [0m[[0m[0mdebug[0m] [0m[0mGetting org.scala-sbt:compiler-bridge_2.12:1.0.3:compile for Scala 2.12.4[0m
-[0m[[0m[0mdebug[0m] [0m[0m[zinc] Running cached compiler 2e74be0b for Scala compiler version 2.12.4[0m
+[0m[[0m[0mdebug[0m] [0m[0m[zinc] Running cached compiler 4197b17d for Scala compiler version 2.12.4[0m
 [0m[[0m[0mdebug[0m] [0m[0m[zinc] The Scala compiler is invoked with:[0m
 [0m[[0m[0mdebug[0m] [0m[0m	-bootclasspath[0m
 [0m[[0m[0mdebug[0m] [0m[0m	C:\Program Files\Java\jdk1.8.0_161\jre\lib\resources.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\rt.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\sunrsasign.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\jsse.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\jce.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\charsets.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\jfr.jar;C:\Program Files\Java\jdk1.8.0_161\jre\classes;C:\Users\jurgis\.sbt\boot\scala-2.12.4\lib\scala-library.jar[0m
 [0m[[0m[0mdebug[0m] [0m[0m	-classpath[0m
 [0m[[0m[0mdebug[0m] [0m[0m	C:\work\scala\fp-in-scala\target\scala-2.12\classes[0m
-[0m[[0m[0mdebug[0m] [0m[0mScala compilation took 1.22060336 s[0m
+[0m[[0m[0mdebug[0m] [0m[0mScala compilation took 0.820669989 s[0m
 [0m[[0m[0minfo[0m] [0m[0mDone compiling.[0m
 [0m[[0m[0mdebug[0m] [0m[0mNew invalidations:[0m
 [0m[[0m[0mdebug[0m] [0m[0m	Set()[0m
