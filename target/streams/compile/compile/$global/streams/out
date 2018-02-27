@@ -1,9 +1,5 @@
-[0m[[0m[31merror[0m] [0m[0mC:\work\scala\fp-in-scala\src\main\scala\rainysjurgis\chapter4.scala:156:33: type mismatch;[0m
-[0m[[0m[31merror[0m] [0m[0m found   : List[Product with Serializable with rainysjurgis.chapter4.Option[Int]][0m
-[0m[[0m[31merror[0m] [0m[0m required: List[rainysjurgis.chapter4.Either[?,?]][0m
-[0m[[0m[31merror[0m] [0m[0m    println(Either.sequence(List(Some(1), Some(2), None, Some(3))))[0m
-[0m[[0m[31merror[0m] [0m[0m                                ^[0m
-[0m[[0m[31merror[0m] [0m[0mC:\work\scala\fp-in-scala\src\main\scala\rainysjurgis\chapter4.scala:157:20: value sequence2 is not a member of object rainysjurgis.chapter4.Either[0m
-[0m[[0m[31merror[0m] [0m[0m    println(Either.sequence2(List(Some(1), Some(2), None, Some(3))))[0m
-[0m[[0m[31merror[0m] [0m[0m                   ^[0m
-[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m
+[0m[[0m[33mwarn[0m] [0m[0mC:\work\scala\fp-in-scala\src\main\scala\rainysjurgis\chapter3.scala:293:36: match may not be exhaustive.[0m
+[0m[[0m[33mwarn[0m] [0m[0mIt would fail on the following input: EmptyTree[0m
+[0m[[0m[33mwarn[0m] [0m[0m      def loop(tree: Tree[A]): B = tree match {[0m
+[0m[[0m[33mwarn[0m] [0m[0m                                   ^[0m
+[0m[[0m[33mwarn[0m] [0m[0mone warning found[0m
