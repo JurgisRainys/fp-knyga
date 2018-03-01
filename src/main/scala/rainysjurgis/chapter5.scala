@@ -190,7 +190,6 @@ object chapter5 {
     }
 
     def constant[A](a: A): Stream[A] = {
-//      Stream.cons(a, constant(a))
       infiniteStream(a)(identity)
     }
 

@@ -1,5 +1,7 @@
-[0m[[0m[33mwarn[0m] [0m[0mC:\work\scala\fp-in-scala\src\main\scala\rainysjurgis\chapter3.scala:293:36: match may not be exhaustive.[0m
-[0m[[0m[33mwarn[0m] [0m[0mIt would fail on the following input: EmptyTree[0m
-[0m[[0m[33mwarn[0m] [0m[0m      def loop(tree: Tree[A]): B = tree match {[0m
-[0m[[0m[33mwarn[0m] [0m[0m                                   ^[0m
-[0m[[0m[33mwarn[0m] [0m[0mone warning found[0m
+[0m[[0m[31merror[0m] [0m[0mC:\work\scala\fp-in-scala\src\main\scala\rainysjurgis\chapter6.scala:96:88: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Unit[0m
+[0m[[0m[31merror[0m] [0m[0m required: rainysjurgis.chapter6.Rand[C][0m
+[0m[[0m[31merror[0m] [0m[0m    (which expands to)  rainysjurgis.chapter6.RNG => (C, rainysjurgis.chapter6.RNG)[0m
+[0m[[0m[31merror[0m] [0m[0m    def map2UsingFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {[0m
+[0m[[0m[31merror[0m] [0m[0m                                                                                       ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m
