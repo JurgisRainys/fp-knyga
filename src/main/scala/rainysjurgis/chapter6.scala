@@ -7,7 +7,7 @@ object chapter6 {
   type State[S, +A] = S => (A, S)
   type Rand[A] = State[RNG, A]
 
-//  case class State[S, +A](run: S => (A, S))
+  case class State[S, +A](run: S => (A, S))
   case class SimpleRNG(seed: Long) extends RNG {
     def nextInt: (Int, RNG) = {
       val newSeed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
@@ -39,7 +39,7 @@ object chapter6 {
     }
 
     def double2: Rand[Double] =
-      map(nonNegativeInt)(num => if (num == Int.MinValue) 0 else (num / Int.MaxValue).toDouble)(_)
+      map(nonNegativeInt)(num => if (num == Int.MinValue) 0 else (num / Int.MaxValue).toDouble)
 
     def intDouble(rng: RNG): ((Int, Double), RNG) = {
       rng.nextInt match {
@@ -78,30 +78,31 @@ object chapter6 {
     }
 
     def unit[A](a: A): Rand[A] =
-      rng => (a, rng)
+      State(rng => (a, rng))
 
     def unitGeneralized[S, A](a: A): State[S, A] =
-      state => (a, state)
+      State(s => (a, s))
 
-    def map[A, B](s: Rand[A])(f: A => B): Rand[B] = rng => {
-      s(rng) match { case (a, nextRng) => (f(a), nextRng) }
+    def map[A, B](s: Rand[A])(f: A => B): Rand[B] = State { rng =>
+      val (a, nextRng) = s.run(rng)
+      (f(a), nextRng)
     }
 
     def mapUsingFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] = {
-      flatMap(s)(a => nextRng => (f(a), nextRng))
+      flatMap(s)(a => State(nextRng => (f(a), nextRng)))
     }
 
-    def mapGeneralized[S, A, B](func: S => (A,S))(f: A => B): State[S, B] = rng => {
-      func(rng) match { case (a, state) => (f(a), state) }
-    }
+    def mapGeneralized[S, A, B](func: S => (A,S))(f: A => B): State[S, B] = State(s => {
+      func(s) match { case (a, state) => (f(a), state) }
+    })
 
-    def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = initialRng => {
+    def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = State(initialRng => {
       ra(initialRng) match {
         case (a, tempRng) => rb(tempRng) match {
           case (b, finalRng) => (f(a, b), finalRng)
         }
       }
-    }
+    })
 
     def map2Generalized[A, B, C, S](ra: State[S, A], rb: State[S, B])(f: (A, B) => C): State[S, C] = initialState => {
       ra(initialState) match {
