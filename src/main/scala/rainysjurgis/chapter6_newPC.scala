@@ -39,9 +39,13 @@ object chapter6_newPC {
     def get[S]: State[S, S] = State(s => (s, s))
     def set[S](s: S): State[S, Unit] = State(_ => ((), s))
 
-    def sequence[S, A](list: List[State[S, A]]): State[S, List[A]] = {
-      ???
-    }
+    def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] = State(initialRng => {
+      fs.foldRight((List.empty[A], initialRng))((h, acc) => {
+        val (list, rng) = acc
+        val (a, nextState) = h.run(rng)
+        (a :: list, nextState)
+      })
+    })
   }
 
   sealed trait Input
