@@ -39,13 +39,18 @@ object chapter6_newPC {
     def get[S]: State[S, S] = State(s => (s, s))
     def set[S](s: S): State[S, Unit] = State(_ => ((), s))
 
-    def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] = State(initialRng => {
-      fs.foldRight((List.empty[A], initialRng))((h, acc) => {
-        val (list, rng) = acc
-        val (a, nextState) = h.run(rng)
+    def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] = State(initialState => {
+      fs.foldRight((List.empty[A], initialState))((h, acc) => {
+        val (list, state) = acc
+        val (a, nextState) = h.run(state)
         (a :: list, nextState)
       })
     })
+
+    def modify[S](f: S => S): State[S, Unit] = for {
+      s <- get
+      _ <- set(f(s))
+    } yield ()
   }
 
   sealed trait Input
@@ -66,10 +71,27 @@ object chapter6_newPC {
 
   object Machine {
     def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
-
+      State(state => {
+        val newMachine = inputs.foldLeft(state)((machine, input) => {
+          val (_, state) = handleInputWithFor(input).run(machine)
+          state
+        })
+        ((newMachine.candies, newMachine.coins), newMachine)
+      })
     }
 
-    def simulate(input: Input): State[Machine, Unit] = {
+    def simulateMachine2(inputs: List[Input]): State[Machine, (Int, Int)] = {
+      getMachineState(
+        State.sequence(inputs.foldLeft(List.empty[State[Machine, Unit]])((list, input) => {
+          val nextState = handleInputWithFor(input)
+          nextState :: list
+      })))
+    }
+
+    def getMachineState(s: State[Machine, List[Unit]]): State[Machine, (Int, Int)] =
+      State(m => ((m.candies, m.coins), m))
+
+    def handleInput(input: Input): State[Machine, Unit] = {
       State(state => {
         ((), input match {
           case Coin => state.insertCoin
@@ -78,16 +100,37 @@ object chapter6_newPC {
       })
     }
 
-    def simulateWithFor(input: Input): State[Machine, Unit] = {
-      for {
+    def handleInputWithFlatMap(input: Input): State[Machine, Unit] = {
+      State.get.flatMap(_ => applyFxToInput(input))
+    }
 
-      }
+    def handleInputWithFor(input: Input): State[Machine, Unit] = {
+      for {
+        _ <- applyFxToInput2(input)
+      } yield ()
+    }
+
+    def applyFxToInput(input: Input): State[Machine, Unit] = {
+      State(state => ((),
+        input match {
+          case Coin => state.insertCoin
+          case Turn => state.turnKnob
+        }
+      ))
+    }
+
+    def applyFxToInput2(input: Input): State[Machine, Unit] = {
+      State.modify(m => input match {
+        case Coin => m.insertCoin
+        case Turn => m.turnKnob
+      })
     }
   }
 
   def test: Unit = {
     val machine = new Machine(true, 5, 10)
     val inputs = List(Coin, Turn, Coin, Turn, Turn, Turn, Turn, Turn, Turn, Turn, Coin)
+    val inputs2 = List(Coin, Turn, Coin, Turn, Turn, Coin)
     println(Machine.simulateMachine(inputs).run(machine))
   }
 }
