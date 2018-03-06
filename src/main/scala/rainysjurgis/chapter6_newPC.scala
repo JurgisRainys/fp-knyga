@@ -1,5 +1,7 @@
 package rainysjurgis
 
+import rainysjurgis.chapter6.SimpleRNG.{flatMap, unit}
+
 object chapter6_newPC {
   trait RNG {
     def nextInt: (Int, RNG)
@@ -22,16 +24,18 @@ object chapter6_newPC {
         (f(a), newState)
       }
 
-    def flatMap[B](f: A => State[S, B]): State[S, B] = {
-      State(state => { this.run(state) match { case (a, newState) => f(a).run(newState) }})
-    }
+    def flatMap[B](f: A => State[S, B]): State[S, B] =
+      State { state =>
+        val (a, newState) = run(state)
+        f(a).run(newState)
+      }
 
     def map2[B, C](otherState: State[S, B])(f: (A, B) => C): State[S, C] = {
-      State(state => this.run(state) match {
-        case (a, tempState) => otherState.run(tempState) match {
-          case (b, finalState) => (f(a, b), finalState)
-        }
-      })
+      State { state =>
+        val (a, tempState) = this.run(state)
+        val (b, finalState) = otherState.run(tempState)
+        (f(a, b), finalState)
+      }
     }
   }
   object State {
@@ -39,13 +43,14 @@ object chapter6_newPC {
     def get[S]: State[S, S] = State(s => (s, s))
     def set[S](s: S): State[S, Unit] = State(_ => ((), s))
 
-    def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] = State(initialState => {
-      fs.foldRight((List.empty[A], initialState))((h, acc) => {
-        val (list, state) = acc
-        val (a, nextState) = h.run(state)
-        (a :: list, nextState)
-      })
-    })
+    def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] = {
+      fs.foldRight(unit[S, List[A]](Nil))((element, state) =>
+        state.map2(element)((list, head) => head :: list)
+//        state.flatMap(list =>
+//          element.flatMap(a =>
+//            unit(a :: list)))
+        )
+    }
 
     def modify[S](f: S => S): State[S, Unit] = for {
       s <- get
@@ -71,66 +76,26 @@ object chapter6_newPC {
 
   object Machine {
     def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
-      State(state => {
-        val newMachine = inputs.foldLeft(state)((machine, input) => {
-          val (_, state) = handleInputWithFor(input).run(machine)
-          state
-        })
-        ((newMachine.candies, newMachine.coins), newMachine)
-      })
+      for {
+        _ <- State.sequence(inputs.map(handleInput))
+        m <- State.get
+      } yield (m.candies, m.coins)
     }
-
-    def simulateMachine2(inputs: List[Input]): State[Machine, (Int, Int)] = {
-      getMachineState(
-        State.sequence(inputs.foldLeft(List.empty[State[Machine, Unit]])((list, input) => {
-          val nextState = handleInputWithFor(input)
-          nextState :: list
-      })))
-    }
-
-    def getMachineState(s: State[Machine, List[Unit]]): State[Machine, (Int, Int)] =
-      State(m => ((m.candies, m.coins), m))
 
     def handleInput(input: Input): State[Machine, Unit] = {
-      State(state => {
-        ((), input match {
-          case Coin => state.insertCoin
-          case Turn => state.turnKnob
-        })
-      })
-    }
-
-    def handleInputWithFlatMap(input: Input): State[Machine, Unit] = {
-      State.get.flatMap(_ => applyFxToInput(input))
-    }
-
-    def handleInputWithFor(input: Input): State[Machine, Unit] = {
-      for {
-        _ <- applyFxToInput2(input)
-      } yield ()
-    }
-
-    def applyFxToInput(input: Input): State[Machine, Unit] = {
-      State(state => ((),
+      State.modify { m =>
         input match {
-          case Coin => state.insertCoin
-          case Turn => state.turnKnob
+          case Coin => m.insertCoin
+          case Turn => m.turnKnob
         }
-      ))
-    }
-
-    def applyFxToInput2(input: Input): State[Machine, Unit] = {
-      State.modify(m => input match {
-        case Coin => m.insertCoin
-        case Turn => m.turnKnob
-      })
+      }
     }
   }
 
   def test: Unit = {
     val machine = new Machine(true, 5, 10)
-    val inputs = List(Coin, Turn, Coin, Turn, Turn, Turn, Turn, Turn, Turn, Turn, Coin)
+    val inputs = List(Coin, Turn, Coin, Turn, Turn, Turn, Turn, Turn, Turn, Turn, Coin, Coin, Turn, Coin, Turn, Coin, Turn, Coin)
     val inputs2 = List(Coin, Turn, Coin, Turn, Turn, Coin)
-    println(Machine.simulateMachine(inputs).run(machine))
+    println(Machine.simulateMachine(inputs2).run(machine))
   }
 }

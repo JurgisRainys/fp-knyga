@@ -20,10 +20,10 @@ object chapter6 {
   }
 
   object SimpleRNG {
-    def randomPair(rng: RNG): ((Int,Int), RNG) = {
-      val (i1,rng2) = rng.nextInt
-      val (i2,rng3) = rng2.nextInt
-      ((i1,i2), rng3)
+    def randomPair(rng: RNG): ((Int, Int), RNG) = {
+      val (i1, rng2) = rng.nextInt
+      val (i2, rng3) = rng2.nextInt
+      ((i1, i2), rng3)
     }
 
     def nonNegativeInt(rng: RNG): (Int, RNG) = {
@@ -94,8 +94,10 @@ object chapter6 {
       flatMap(s)(a => nextRng => (f(a), nextRng))
     }
 
-    def mapGeneralized[S, A, B](func: S => (A,S))(f: A => B): State[S, B] = s => {
-      func(s) match { case (a, state) => (f(a), state) }
+    def mapGeneralized[S, A, B](func: S => (A, S))(f: A => B): State[S, B] = s => {
+      func(s) match {
+        case (a, state) => (f(a), state)
+      }
     }
 
     def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = initialRng => {
@@ -115,11 +117,12 @@ object chapter6 {
     }
 
     def map2UsingFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
-      rng => ra(rng) match {
-        case (a, tempRng) => rb(tempRng) match {
-          case (b, finalRng) => (f(a, b), finalRng)
+      rng =>
+        ra(rng) match {
+          case (a, tempRng) => rb(tempRng) match {
+            case (b, finalRng) => (f(a, b), finalRng)
+          }
         }
-      }
     }
 
     def flatMap[A, B](s: Rand[A])(f: A => Rand[B]): Rand[B] =
@@ -135,7 +138,7 @@ object chapter6 {
       }
 
 
-    def both[A,B](ra: Rand[A], rb: Rand[B]): Rand[(A,B)] =
+    def both[A, B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] =
       map2(ra, rb)((_, _))
 
     val randIntDouble: Rand[(Int, Double)] =
@@ -144,12 +147,12 @@ object chapter6 {
     val randDoubleInt: Rand[(Double, Int)] =
       both(double, rng => rng.nextInt)
 
-    def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = initialRng => {
-      fs.foldRight((List.empty[A], initialRng))((h, acc) => acc match {
-        case (list, rng) => h(rng) match {
-          case (a, nextRng) => (a :: list, nextRng)
+    def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
+      fs.foldRight(unit(List.empty[A])) { (rng, current) =>
+        flatMap(current) { list =>
+          flatMap(rng) { a => unit(a :: list) }
         }
-      })
+      }
     }
 
     def ints2(count: Int): Rand[List[Int]] = rng => {
