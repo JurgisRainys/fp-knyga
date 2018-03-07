@@ -7,43 +7,34 @@ import scala.concurrent.duration.TimeUnit
 
 object chapter7 {
 
+  sealed trait Future[A] {
+    private[rainysjurgis] def apply(k: A => Unit): Unit
+  }
+
   type Par[A] = ExecutorService => Future[A]
 
   object Par {
-    def unit[A](a: A): Par[A] = (_: ExecutorService) => UnitFuture(a)
-
-    private case class UnitFuture[A](get: A) extends Future[A] {
-      def isDone = true
-
-      def get(timeout: Long, units: TimeUnit): A = get
-
-      def isCancelled = false
-
-      def cancel(eventIfRunning: Boolean): Boolean = false
-    }
-
-    case class Map2Future[A,B,C](a: Future[A], b: Future[B],
-                                 f: (A,B) => C) extends Future[C] {
-      @volatile var cache: Option[C] = None
-      val isDone: Boolean = cache.isDefined
-      val isCancelled: Boolean = a.isCancelled || b.isCancelled
-      def cancel(evenIfRunning: Boolean): Boolean =
-        a.cancel(evenIfRunning) || b.cancel(evenIfRunning)
-      val get: C = compute(Long.MaxValue)
-      def get(timeout: Long, units: TimeUnit): C =
-        compute(TimeUnit.MILLISECONDS.convert(timeout, units))
-
-      private def compute(timeoutMs: Long): C = cache match {
-        case Some(c) => c
-        case None =>
-          val start = System.currentTimeMillis
-          val ar = a.get(timeoutMs, TimeUnit.MILLISECONDS)
-          val stop = System.currentTimeMillis; val at = stop-start
-          val br = b.get(timeoutMs - at, TimeUnit.MILLISECONDS)
-          val ret = f(ar, br)
-          cache = Some(ret)
-          ret
+    def unit[A](a: A): Par[A] =
+      es => new Future[A] {
+        def apply(cb: A => Unit): Unit =
+          cb(a)
       }
+
+    def fork[A](a: => Par[A]): Par[A] = es =>
+      new Future[A] {
+        def apply(cb: A => Unit): Unit =
+          eval(es)(a(es)(cb))
+      }
+
+    def eval(es: ExecutorService)(r: => Unit): Unit =
+      es.submit(new Callable[Unit] { def call = r })
+
+    def run[A](es: ExecutorService)(p: Par[A]): A= {
+      val ref = new AtomicReference[A]
+      val latch = new CountDownLatch(1)
+      p(es) { a => ref.set(a); latch.countDown }
+      latch.await
+      ref.get
     }
 
     def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
@@ -52,18 +43,24 @@ object chapter7 {
       map2(pa, unit(()))((a, _) => f(a))
     }
 
-    def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = {
-      es: ExecutorService => {
-        val af = a(es)
-        val bf = b(es)
-        UnitFuture(f(af.get, bf.get))
-      }
-    }
-
-    def map2WithTimeouts[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = {
-      es: ExecutorService => {
-        val (af, bf) = (a(es), b(es))
-        Map2Future(af, bf, f)
+    def map2[A, B, C](p: Par[A], p2: Par[B])(f: (A, B) => C): Par[C] = {
+      es: ExecutorService => new Future[C] {
+        def apply(cb: C => Unit): Unit = {
+          var ar: Option[A] = None
+          var br: Option[B] = None
+          val combiner = Actor[Either[A,B]](es) {
+            case Left(a) => br match {
+              case None => ar = Some(a)
+              case Some(b) => eval(es)(cb(f(a, b)))
+            }
+            case Right(b) => ar match {
+              case None => br = Some(b)
+              case Some(a) => eval(es)(cb(f(a, b)))
+            }
+          }
+          p(es)(a => combiner ! Left(a))
+          p2(es)(b => combiner ! Right(b))
+        }
       }
     }
 
@@ -85,22 +82,6 @@ object chapter7 {
       ) {
         case ((a, b), (c, (d, e))) => f(a, b, c, d, e)
       }
-    }
-
-    def run[A](s: ExecutorService)(a: Par[A]): Future[A] = {
-      def run[A](es: ExecutorService)(p: Par[A]):A={
-        val ref = new AtomicReference[A]
-        val latch = new CountDownLatch(1)
-        p(es) { a => ref.set(a); latch.countDown }
-        latch.await
-        ref.get
-      }
-    }
-
-    def fork[A](a: => Par[A]): Par[A] = es => {
-      es.submit(new Callable[A] {
-        def call = a(es).get
-      })
     }
 
     def delay[A](fa: => Par[A]): Par[A] = es => fa(es)
@@ -126,9 +107,6 @@ object chapter7 {
     def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = {
       fork(sequence(as.filter(a => f(a)).map(asyncF(identity))))
     }
-
-    def equal[A](e: ExecutorService)(p: Par[A], p2: Par[A]): Boolean =
-      p(e).get == p2(e).get
   }
 
   def sum(ints: IndexedSeq[Int]): Par[Int] =
@@ -159,11 +137,11 @@ object chapter7 {
     val executor = Executors.newFixedThreadPool(10)
     val list = List(1, 2, 3, 4, 5, 6, 7, 8, 9)
     val list2 = List("lol xd\nxd", "xd xd xd", "xd")
-    val result = Par.map2WithTimeouts(sleep, sleep)((num1, num2) => num1 + num2)
+    val result = Par.map2(sleep, Par.fork(Par.fork(sleep)))((num1, num2) => num1 + num2)
     println(result(executor))
 
     val a = Par.lazyUnit(42 + 1)
     val S = Executors.newFixedThreadPool(1)
-    println(Par.equal(S)(a, Par.fork(a)))
+    println(result(S).apply(a => println(a)))
   }
 }
