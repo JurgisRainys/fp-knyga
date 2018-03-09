@@ -1,9 +1,6 @@
 package rainysjurgis
 
 import java.util.concurrent._
-import java.util.concurrent.atomic.AtomicReference
-
-import sun.awt.SunHints.Key
 
 import scala.concurrent.duration.TimeUnit
 
@@ -24,14 +21,15 @@ object chapter7 {
       def cancel(eventIfRunning: Boolean): Boolean = false
     }
 
-    case class Map2Future[A,B,C](a: Future[A], b: Future[B],
-                                 f: (A,B) => C) extends Future[C] {
+    case class Map2Future[A,B,C](
+      a: Future[A], b: Future[B], f: (A,B) => C
+    ) extends Future[C] {
       @volatile var cache: Option[C] = None
-      val isDone: Boolean = cache.isDefined
-      val isCancelled: Boolean = a.isCancelled || b.isCancelled
+      def isDone: Boolean = cache.isDefined
+      def isCancelled: Boolean = a.isCancelled || b.isCancelled
       def cancel(evenIfRunning: Boolean): Boolean =
         a.cancel(evenIfRunning) || b.cancel(evenIfRunning)
-      val get: C = compute(Long.MaxValue)
+      def get: C = compute(Long.MaxValue)
       def get(timeout: Long, units: TimeUnit): C =
         compute(TimeUnit.MILLISECONDS.convert(timeout, units))
 
@@ -73,8 +71,8 @@ object chapter7 {
       }
     }
 
-    def map3[A, B, C, D](a: Par[A], b: Par[B], c: Par[C])(f: (A, B, C) => D): Par[D] = {
-      map2(a, map2(b, c)((_, _))) { case (a, (b, c)) => f(a, b, c) }
+    def map3[A, B, C, D](aP: Par[A], bP: Par[B], cP: Par[C])(f: (A, B, C) => D): Par[D] = {
+      map2(aP, map2(bP, cP)((_, _))) { case (a, (b, c)) => f(a, b, c) }
     }
 
     def map4[A, B, C, D, E](a: Par[A], b: Par[B], c: Par[C], d: Par[D])(f: (A, B, C, D) => E): Par[E] = {
@@ -106,14 +104,23 @@ object chapter7 {
     // choices //
 
     def choice[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
-      choiceN(Par.map(cond)(x => if (x) 0 else 1))(List(t, f))
+      choiceN(map(cond)(x => if (x) 0 else 1))(List(t, f))
 
     def choiceChooser[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
       flatMap(cond)(if (_) t else f)
 
-    def choiceMapChooser[K,V](key: Par[K])(choices: Map[K,Par[V]]): Par[V] =
+    def choiceMapChooser[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] =
       flatMap(key)(choices(_))
 
+    def choiceMapChooserSafe[K, V](keyPar: Par[K])(choices: Map[K, Par[V]]): Par[Option[V]] =
+      flatMap(keyPar) { key =>
+        choices.get(key) match {
+          case Some(par) => map(par)(Some.apply)
+          case None => unit(None)
+        }
+      }
+
+    // def choiceN[A, N <: Nat](n: Par[0..N])(choices: List[Par[A], N]): Par[A] = {
     def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = {
       es => {
         val ind = run(es)(n).get
