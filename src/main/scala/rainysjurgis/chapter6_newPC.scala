@@ -1,6 +1,9 @@
 package rainysjurgis
 
-import rainysjurgis.chapter6.SimpleRNG.{flatMap, unit}
+import java.time.LocalTime
+
+import rainysjurgis.chapter6.SimpleRNG.flatMap
+import rainysjurgis.chapter6.{RNG, State, _}
 
 object chapter6_newPC {
   trait RNG {
@@ -46,10 +49,31 @@ object chapter6_newPC {
     def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] = {
       fs.foldRight(unit[S, List[A]](Nil))((element, state) =>
         state.map2(element)((list, head) => head :: list)
-//        state.flatMap(list =>
-//          element.flatMap(a =>
-//            unit(a :: list)))
         )
+    }
+
+    def numberInRange(start: Int, stopExclusive: Int): State[RNG, Int] = {
+//      State(state => {
+//          val (x, nextState) = state.nextInt
+//          if (x < stopExclusive && x > start) (x, nextState)
+//          else numberInRange(start, stopExclusive).run(nextState)
+//        }
+//      )
+
+      //DABAIGT KAD GRAZU BUTU
+      get.flatMap(x => {
+        val (num, nextState) = x.nextInt
+        if (num < stopExclusive && (num > start)) (num, nextState)
+        else numberInRange(start, stopExclusive)
+      })
+
+//      val rng = SimpleRNG(System.currentTimeMillis)
+//      val initialState = unit(stopExclusive)
+//
+//      def loop(s: State[RNG, Int]) =
+//        s.flatMap(x => if (x < stopExclusive && x > start) x else loop(State.get))
+//
+//     loop(initialState)
     }
 
     def modify[S](f: S => S): State[S, Unit] = for {
