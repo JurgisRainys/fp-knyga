@@ -3,6 +3,8 @@ package rainysjurgis
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicReference
 
+import sun.awt.SunHints.Key
+
 import scala.concurrent.duration.TimeUnit
 
 object chapter7 {
@@ -60,6 +62,10 @@ object chapter7 {
       }
     }
 
+    def map2WithFlatMap[A, B, C](pa: Par[A], pb: Par[B])(f: (A, B) => C): Par[C] = {
+      flatMap(pa)(a => flatMap(pb)(b => unit(f(a, b))))
+    }
+
     def map2WithTimeouts[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = {
       es: ExecutorService => {
         val (af, bf) = (a(es), b(es))
@@ -87,15 +93,7 @@ object chapter7 {
       }
     }
 
-    def run[A](s: ExecutorService)(a: Par[A]): Future[A] = {
-      def run[A](es: ExecutorService)(p: Par[A]):A={
-        val ref = new AtomicReference[A]
-        val latch = new CountDownLatch(1)
-        p(es) { a => ref.set(a); latch.countDown }
-        latch.await
-        ref.get
-      }
-    }
+    def run[A](s: ExecutorService)(a: Par[A]): Future[A] = a(s)
 
     def fork[A](a: => Par[A]): Par[A] = es => {
       es.submit(new Callable[A] {
@@ -104,6 +102,52 @@ object chapter7 {
     }
 
     def delay[A](fa: => Par[A]): Par[A] = es => fa(es)
+
+    // choices //
+
+    def choice[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+      choiceN(Par.map(cond)(x => if (x) 0 else 1))(List(t, f))
+
+    def choiceChooser[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+      flatMap(cond)(if (_) t else f)
+
+    def choiceMapChooser[K,V](key: Par[K])(choices: Map[K,Par[V]]): Par[V] =
+      flatMap(key)(choices(_))
+
+    def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = {
+      es => {
+        val ind = run(es)(n).get
+        choices(ind)(es)
+      }
+    }
+
+    def choiceNChooser[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = {
+      flatMapUsingJoin(n)(choices(_))
+    }
+
+    // choices end //
+
+    def flatMap[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = {
+      es => {
+        val a = run(es)(pa).get
+        choices(a)(es)
+      }
+    }
+
+    def flatMapUsingJoin[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = {
+      joinUsingFlatMap(map(pa)(a => choices(a)))
+    }
+
+    def join[A](a: Par[Par[A]]): Par[A] = {
+      es => {
+        val parA = run(es)(a).get
+        parA(es)
+      }
+    }
+
+    def joinUsingFlatMap[A](a: Par[Par[A]]): Par[A] = {
+      flatMap(a)(identity)
+    }
 
     def asyncF[A, B](f: A => B): A => Par[B] = {
       a => lazyUnit(f(a))
@@ -131,14 +175,6 @@ object chapter7 {
       p(e).get == p2(e).get
   }
 
-  def sum(ints: IndexedSeq[Int]): Par[Int] =
-    if (ints.size <= 1)
-      Par.unit(ints.headOption getOrElse 0)
-    else {
-      val (l, r) = ints.splitAt(ints.length / 2)
-      Par.map2(Par.fork(sum2(l)), Par.fork(sum2(r)))(_ + _)
-    }
-
   def sum2(ints: IndexedSeq[Int]): Par[Int] =
     if (ints.size <= 1)
       Par.unit(ints.headOption getOrElse 0)
@@ -159,11 +195,7 @@ object chapter7 {
     val executor = Executors.newFixedThreadPool(10)
     val list = List(1, 2, 3, 4, 5, 6, 7, 8, 9)
     val list2 = List("lol xd\nxd", "xd xd xd", "xd")
-    val result = Par.map2WithTimeouts(sleep, sleep)((num1, num2) => num1 + num2)
+    val result = Par.choiceNChooser(Par.unit(1))(List(Par.unit(1), Par.unit(2), Par.unit(3)))
     println(result(executor))
-
-    val a = Par.lazyUnit(42 + 1)
-    val S = Executors.newFixedThreadPool(1)
-    println(Par.equal(S)(a, Par.fork(a)))
   }
 }
