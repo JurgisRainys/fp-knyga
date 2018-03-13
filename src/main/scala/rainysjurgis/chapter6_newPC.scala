@@ -1,10 +1,5 @@
 package rainysjurgis
 
-import java.time.LocalTime
-
-import rainysjurgis.chapter6.SimpleRNG.flatMap
-import rainysjurgis.chapter6.{RNG, State, _}
-
 object chapter6_newPC {
   trait RNG {
     def nextInt: (Int, RNG)
@@ -41,39 +36,44 @@ object chapter6_newPC {
       }
     }
   }
+
+  object SimpleRNG {
+    def nonNegativeEven: State[RNG, Int] = {
+      nonNegativeInt.map(num => num - num % 2)
+    }
+
+    def nonNegativeInt: State[RNG, Int] = {
+      State(rng => {
+        rng.nextInt match {
+          case (Int.MinValue, nextRng) => (0, nextRng)
+          case (num, nextRng) => (if (num < 0) -num else num, nextRng)
+        }
+      })
+    }
+
+    def nonNegativeLessThan(n: Int): State[RNG, Int] = {
+      nonNegativeInt.flatMap(num => {
+        val remainder = num % n
+        if (num + (n-1) - remainder >= 0) State.setArgument(remainder) else nonNegativeLessThan(n)
+      })
+    }
+
+    def numberInRange(start: Int, stopExclusive: Int): State[RNG, Int] = {
+      val difference = stopExclusive - start
+      nonNegativeLessThan(difference).map(_ + start)
+    }
+  }
+
   object State {
     def unit[S, A](a: A): State[S, A] = State(s => (a, s))
     def get[S]: State[S, S] = State(s => (s, s))
     def set[S](s: S): State[S, Unit] = State(_ => ((), s))
+    def setArgument[A, S](a: A): State[S, A] = State.get.map(_ => a)
 
     def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] = {
       fs.foldRight(unit[S, List[A]](Nil))((element, state) =>
         state.map2(element)((list, head) => head :: list)
         )
-    }
-
-    def numberInRange(start: Int, stopExclusive: Int): State[RNG, Int] = {
-//      State(state => {
-//          val (x, nextState) = state.nextInt
-//          if (x < stopExclusive && x > start) (x, nextState)
-//          else numberInRange(start, stopExclusive).run(nextState)
-//        }
-//      )
-
-      //DABAIGT KAD GRAZU BUTU
-      get.flatMap(x => {
-        val (num, nextState) = x.nextInt
-        if (num < stopExclusive && (num > start)) (num, nextState)
-        else numberInRange(start, stopExclusive)
-      })
-
-//      val rng = SimpleRNG(System.currentTimeMillis)
-//      val initialState = unit(stopExclusive)
-//
-//      def loop(s: State[RNG, Int]) =
-//        s.flatMap(x => if (x < stopExclusive && x > start) x else loop(State.get))
-//
-//     loop(initialState)
     }
 
     def modify[S](f: S => S): State[S, Unit] = for {
