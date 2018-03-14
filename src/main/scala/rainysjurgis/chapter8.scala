@@ -1,7 +1,10 @@
 package rainysjurgis
 
+import java.util.concurrent.{ExecutorService, Executors}
+
 import rainysjurgis.chapter6_newPC._
-import rainysjurgis.chapter8.Prop.{ MaxSize, TestCases, FailedCase, SuccessCount }
+import rainysjurgis.chapter7._
+import rainysjurgis.chapter8.Prop.{FailedCase, MaxSize, SuccessCount, TestCases, forAll}
 
 object chapter8 {
   // 8.2
@@ -134,6 +137,10 @@ object chapter8 {
     def isFalsified = true
   }
 
+  case object Proved extends Result {
+    def isFalsified = false
+  }
+
   case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
     def &&(p: Prop): Prop = Prop {
       (maxSize, testCases, rng) =>
@@ -173,35 +180,44 @@ object chapter8 {
           println(s"! Falsified after $n passed tests:\n $msg")
         case Passed =>
           println(s"+ OK, passed $testCases tests.")
+        case Proved =>
+          println(s"+ Ok, proved property.")
       }
+
+    def check(p: => Boolean): Prop = Prop { (_, _, _) =>
+      if (p) Proved else Falsified("()", 0)
+    }
+
+    def forAll[A](g: SGen[A])(f: A => Boolean): Prop = forAllInner(g.forSize)(f)
+
+    def forAllInner[A](g: Int => Gen[A])(f: A => Boolean): Prop = Prop {
+      (maxSize, testCases, rng) => {
+        val casesPerSize = testCases
+        //      val casesPerSize = (testCases + (maxSize - 1)) / maxSize
+
+        val props: Stream[Prop] =
+          Stream.from(0).take(maxSize).map(i => forAllMoreInner(g(i))(f))
+        //        Stream.from(0).take(testCases.min(maxSize)).map(i => forAllMoreInner(g(i))(f))
+
+        val prop: Prop =
+          props.map(p => Prop { (max, _, rng) =>
+            p.run(max, casesPerSize, rng)
+          }).toList.reduce(_ && _)
+
+        prop.run(maxSize, testCases, rng)
+      }
+    }
+
+    def forAllMoreInner[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
+      (_, testCases,rng) => randomStream(as)(rng).zip(Stream.from(0)).take(testCases).map {
+        case (a, i) => try {
+          if (f(a)) Passed
+          else Falsified(a.toString, i)
+        } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
+      }.find(_.isFalsified).getOrElse(Passed)
   }
 
   // PROP END //
-
-  def forAll[A](g: SGen[A])(f: A => Boolean): Prop = forAllInner(g.forSize)(f)
-
-  def forAllInner[A](g: Int => Gen[A])(f: A => Boolean): Prop = Prop {
-    (maxSize, testCases, rng) => {
-      val casesPerSize = (testCases + (maxSize - 1)) / maxSize
-
-      val props: Stream[Prop] =
-        Stream.from(0).take(testCases.min(maxSize) ).map(i => forAllMoreInner(g(i))(f))
-
-      val prop: Prop =
-        props.map(p => Prop { (max, _, rng) =>
-          p.run(max, casesPerSize, rng)
-        }).toList.reduce(_ && _)
-
-      prop.run(maxSize, testCases, rng)
-    }
-  }
-
-  def forAllMoreInner[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
-    (_, testCases,rng) => randomStream(as)(rng).zip(Stream.from(0)).take(testCases).map {
-      case (a, i) => try {
-        if (f(a)) Passed else Falsified(a.toString, i)
-      } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
-    }.find(_.isFalsified).getOrElse(Passed)
   }
 
   def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] = {
@@ -215,23 +231,28 @@ object chapter8 {
     unfold(rng)(rng => Some(g.sample.run(rng)))
   }
 
-  def buildMsg[A](s: A, e: Exception): String =
+  def buildMsg[A](s: A, e: Exception): String = {
     s"test case: $s\n" +
-      s"generated an exception: ${e.getMessage}\n" +
-      s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
-
+    s"generated an exception: ${e.getMessage}\n" +
+    s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
+  }
 
   def test: Unit = {
-    val rng = SimpleRNG(System.currentTimeMillis)
-
     val smallInt = Gen.choose(-10, 10)
-    val sortedProp = forAll(SGen.listOf1(smallInt)) { intList =>
+
+    //test List.sorted
+    val sortedProp = forAll(SGen.listOf(smallInt)) { intList =>
       val (_, isSorted) = intList.sorted.foldLeft((Int.MinValue, true)) {
         case ((prevNum, wasSorted), currentNum) if wasSorted => (currentNum, currentNum >= prevNum)
         case _ => (0, false)
       }
       isSorted
     }
-    Prop.run(sortedProp)
+    Prop.run(sortedProp, 15, 20)
+
+    //test Par.map
+    val ES: ExecutorService = Executors.newCachedThreadPool
+    val p1 = forAll(SGen { _ => Gen.unit(Par.unit(1)) })(i =>
+      Par.map(i)(_ + 1)(ES).get == Par.unit(2)(ES).get)
   }
 }
