@@ -11,6 +11,9 @@ object chapter7 {
   object Par {
     def unit[A](a: A): Par[A] = (_: ExecutorService) => UnitFuture(a)
 
+    def equal[A](p: Par[A], p2: Par[A]): Par[Boolean] =
+      Par.map2(p,p2)(_ == _)
+
     private case class UnitFuture[A](get: A) extends Future[A] {
       def isDone = true
 

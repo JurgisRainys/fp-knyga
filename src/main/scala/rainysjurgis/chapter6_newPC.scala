@@ -62,6 +62,13 @@ object chapter6_newPC {
       val difference = stopExclusive - start
       nonNegativeLessThan(difference).map(_ + start)
     }
+
+    def double: State[RNG, Double] = {
+      nonNegativeInt.map {
+        case Int.MinValue => 0
+        case num => (num / Int.MaxValue).toDouble
+      }
+    }
   }
 
   object State {
