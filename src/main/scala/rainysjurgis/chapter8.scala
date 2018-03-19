@@ -15,6 +15,10 @@ object chapter8 {
     def unapply[A,B](p: (A,B)) = Some(p)
   }
 
+  implicit object intOrdering extends Ordering[Int] {
+    def compare(a1: Int, a2: Int) = a1.compare(a2)
+  }
+
   case class Gen[A](sample: State[RNG, A]) {
     def flatMap[B](f: A => Gen[B]): Gen[B] = {
       Gen(this.sample.flatMap(a => f(a).sample))
@@ -38,7 +42,6 @@ object chapter8 {
     }
 
     def listOfN(n: Int): Gen[List[A]] = {
-//      Gen(this.sample.flatMap(a => State.setArgument(List.fill(n)(a))))
       Gen(State.sequence(List.fill(n)(this.sample)))
     }
 
@@ -63,9 +66,11 @@ object chapter8 {
   }
 
   object Gen {
-    def choose(start: Int, stopExclusive: Int): Gen[Int] = {
+    def choose(start: Int, stopExclusive: Int): Gen[Int] =
       Gen(SimpleRNG.numberInRange(start, stopExclusive))
-    }
+
+    def chooseVector[A](v: Vector[A]) =
+      choose(0, v.length).map(v.apply)
 
     def nestedPar(start: Int, stopExclusive: Int): Gen[Par[Int]] = {
       val (minDepth, maxDepth) = (1, 6)
@@ -76,6 +81,35 @@ object chapter8 {
         choose(start, stopExclusive).map(num => nest(Par.unit(num), depth))
       })
     }
+
+    def fxInt[A](start: Int = 0, stopExclusive: Int = 100): Gen[A => Int] = {
+      unit().map(_ => (arg: A) => {
+        val hash = arg.hashCode
+        val difference = stopExclusive - start
+        (hash % difference) + start
+      })
+    }
+
+    def sign[A](implicit a: Ordering[A]): Gen[(A, A) => Boolean] = {
+      import scala.math.Ordering.Implicits._
+
+      val functions = Vector[(A, A) => Boolean](
+        (a1, a2) => infixOrderingOps(a1).<(a2),
+        _ <= _,
+        _ == _,
+        _ != _,
+        _ >= _,
+        _ > _
+      )
+
+      Gen.chooseVector(functions)
+    }
+
+//    def fxIntBool[A](start: Int = 0, stopExclusive: Int = 100): Gen[Int => Boolean] = {
+//      fxInt(start, stopExclusive).map(fxOuter => num => )
+//    }
+    def genFn[A, B](g: Gen[A])(f: (A, A) => B): Gen[A => B] =
+      g.map(arg => genFunc => f(arg, genFunc))
 
     def unit[A](a: => A): Gen[A] = Gen(State.setArgument(a))
 
@@ -255,17 +289,15 @@ object chapter8 {
   }
 
     val S = Gen.unit(Executors.newCachedThreadPool)
-//      Gen.weighted(
-//        Gen.choose(1, 4).map(Executors.newFixedThreadPool) -> .75,
-//        Gen.unit(Executors.newCachedThreadPool) -> .25
-//      )
 
     def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop =
       forAll(SGen{ _ => S ** g }) { case (es ** a) => f(a)(es).get }
-//      forAll(SGen{ _ => S.map2(g)((_,_)) }) { case (s,a) => f(a)(s).get }
   }
 
   // PROP END //
+
+  def filterList(l: List[Int])(f: Int => Boolean): List[Int] =
+    l.filter(i => i == 10 || f(i))
 
   def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] = {
     def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
@@ -285,68 +317,15 @@ object chapter8 {
   }
 
   def test: Unit = {
-    val rng = SimpleRNG(System.currentTimeMillis)
-    val smallInt = Gen.choose(-10, 10)
-//
-//    //test List.sorted
-//    val sortedProp = forAll(SGen.listOf(smallInt)) { intList =>
-//      val (_, isSorted) = intList.sorted.foldLeft((Int.MinValue, true)) {
-//        case ((prevNum, wasSorted), currentNum) if wasSorted => (currentNum, currentNum >= prevNum)
-//        case _ => (0, false)
-//      }
-//      isSorted
-//    }
-//    Prop.run(sortedProp, 15, 20)
-//
-//    //test Par.map
-//    val ES: ExecutorService = Executors.newCachedThreadPool
-//
-//    val p1 = forAll(SGen { _ => Gen.unit(Par.unit(1)) })(i =>
-//      Par.map(i)(_ + 1)(ES).get == Par.unit(2)(ES).get)
-//    Prop.run(p1)
-//
-//    val p2 = Prop.checkPar{
-//      Par.equal(
-//        Par.map(Par.unit(1))(_ + 1),
-//        Par.unit(2)
-//      )
-//    }
-//    Prop.run(p2)
-//
-//    val p3 = Prop.check {
-//      Par.equal(
-//        Par.map(Par.unit(1))(_ + 1),
-//        Par.unit(2)
-//      )(ES).get
-//    }
-//    Prop.run(p3)
-//
-//    val pint = Gen.choose(0,10).map(Par.unit)
-//    val pint = Gen.nestedPar(0, 10)
-//    val p4 =
-//      Prop.forAllPar(pint)(n => Par.equal(Par.map(n)(y => y), n))
-//    Prop.run(p4)
+    val g1: Gen[List[Int]] = Gen.unit((0 to 10).toList)
 
-//    val p = Prop.checkParBetter {
-//      val x = Par.unit(7 + 11)
-//      val x2 = Par.unit(8 + 11)
-//      val forkX = Par.fork(x)
-//      val forkX2 = Par.fork(x2)
-//      Par.equal(x, forkX)
-//    }
-//    Prop.run(p)
+    val takeWhile23 =
+      Prop.forAll((g1 ** Gen.sign.flatMap(f => Gen.genFn(Gen.choose(1, 100))(f))).unsized) {
+//        case (list, f) => list.takeWhile(f).forall(f)
+        case (list, f) => filterList(list)(f).lengthCompare(list.count(f)) == 0
+      }
+    Prop.run(takeWhile23)
 
-
-    // 8.19
-    def getInt[A](a: A, start: Int, stopExclusive: Int): Gen[A => Int] = {
-      val hash = a.hashCode
-      val difference = stopExclusive - start
-      Gen.choose(0, difference).map(num => _ => (hash % num) + start)
-    }
-
-    val fx = (i: Int) => i < 3
-    val list = List(1, 2).takeWhile(num => getInt(num, -20, 30))
-    val test = list.lengthCompare(list.dropWhile(!fx(_)).size) == 0
 
   }
 }
