@@ -237,8 +237,8 @@ object chapter8 {
     type FailedCase = String
 
     def run(p: Prop,
-            maxSize: Int = 10,
-            testCases: Int = 10,
+            maxSize: Int = 100,
+            testCases: Int = 100,
             rng: RNG = SimpleRNG(System.currentTimeMillis)): Unit =
       p.run(maxSize, testCases, rng) match {
         case Falsified(msg, n) =>
@@ -281,17 +281,37 @@ object chapter8 {
     }
 
     def forAllMoreInner[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
-      (_, testCases,rng) => randomStream(as)(rng)
-        .zip(Stream.from(0))
-        .take(testCases)
-        .map {
-          case (a, i) => try {
-            if (f(a)) { println(a); Passed }
-            else Falsified(a.toString, i)
-          } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
-        }
-        .find(_.isFalsified)
-        .getOrElse(Passed)
+      (_, testCases,rng) =>
+        randomStream(as)(rng)
+          .zip(Stream.from(0))
+          .take(testCases)
+          .map { case (a, i) => getResult(a, i)(f) }
+          .find(_.isFalsified)
+          .getOrElse(Passed)
+    }
+
+    def forAllMoreInner2[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
+      (_, testCases, rng) =>
+        randomStream(as)(rng)
+          .zip(Stream.from(0))
+          .take(testCases)
+          .map { case (a, i) => getResult(a, i)(f) }
+          .find(_.isFalsified)
+          .getOrElse(Passed)
+    }
+
+    def getResult[A](a: A, caseNum: Int)(f: A => Boolean): Result = {
+      try {
+        if (f(a)) Passed
+        else Falsified(a.toString, caseNum)
+      } catch {
+        case e: Exception => Falsified(buildMsg(a, e), caseNum)
+      }
+    }
+
+    def asProp[A](result: Boolean): Prop = Prop {
+      (_, _, _) =>
+        getResult(() , 0)(_ => result)
     }
 
     def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] = {
@@ -318,19 +338,6 @@ object chapter8 {
         case es ** a => f(a)(es).get
 //        case **((es, a)) => f(a)(es).get
       }
-
-    type \/[A, B] = Either[A, B]
-    val x: \/[String, Int] = ???
-    val x1: String \/ Int = ???
-
-    val l = 1 :: 2 :: 3 :: Nil
-    val l1 = Nil.::(3).::(2).::(1)
-
-    val a :: b :: c :: Nil = l
-    val ::(a1, ::(b2, ::(c3, Nil))) = l
-
-    1 + 2
-    1.+(2)
   }
 
   // PROP END //
@@ -342,16 +349,15 @@ object chapter8 {
   def test: Unit = {
     import Ordering.Int
 
-    //Gen.listOf(10, Gen.alphabeticString(10))
     val sgenList: SGen[List[Int]] = SGen.listOf(Gen.choose(0, 100))
     val genList: Gen[List[Int]] = Gen.listOf(10, Gen.choose(0, 10))
 
-      Prop.run(
-        Prop.forAll(sgenList ** Gen.sign.flatMap(f => Gen.genFn(Gen.choose(1, 100))(f)).unsized) {
-          //          case (list, f) => list.takeWhile(f).forall(f)
-          case (list, f) => filterList(list)(f).lengthCompare(list.count(f)) == 0
-        }
-      )
+    Prop.run {
+      Prop.forAll(sgenList ** Gen.sign.flatMap(f => Gen.genFn(Gen.choose(1, 100))(f)).unsized) {
+        //          case (list, f) => list.takeWhile(f).forall(f)
+        case (list, f) => filterList(list)(f).lengthCompare(list.count(f)) == 0
+      }
+    }
 
 //    Prop.run(Prop.forAll(Gen.choose(0, 100).unsized)(_ < 95))
 
