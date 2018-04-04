@@ -31,9 +31,13 @@ object chapter9 {
 //      else map2(p, listOfN(n-1, p))(_ :: _)
     }
 
-    def unit[A](a: A): Parser[A]
+    def unit[A](a: A): Parser[A] = string("") map (_ => a)
 
     def succeed[A](a: A): Parser[A] = unit(a)
+
+    def slice[A](p: Parser[A]): Parser[String] = ???
+
+    def flatMap[A, B](p: Parser[A])(f: A => Parser[B]): Parser[B]
 
     object values {
       val spaces: Parser[String] = regex("\\s".r).many.slice //istikro spaces, tabs, newlines etc.
@@ -62,16 +66,13 @@ object chapter9 {
 
       val quotation: Parser[Char] = char('"')
     }
-    // "xd123 LOL"
-    // (char('x') ** string("123")).slice == string("x123")
-    // returnina ('x', "123") ir ("x123")
 
     case class ParserOps[A](p: Parser[A]) {
       def |[B >: A](p2: Parser[B]): Parser[B] = self.or(p, p2)
 
       def or[B >: A](p2: => Parser[B]): Parser[B] = p | p2
 
-      def flatMap[B](f: A => Parser[B]): Parser[B] = ???
+      def flatMap[B](f: A => Parser[B]): Parser[B] = self.flatMap(p)(f)
 
       def map[B](f: A => B): Parser[B] = {
         p.flatMap(a => unit(f(a)))
@@ -91,7 +92,7 @@ object chapter9 {
 
       def many1: Parser[List[A]] = p.map2(p.many)(_ :: _)
 
-      def slice: Parser[String] = ???
+      def slice: Parser[String] = self.slice(p)
 
       def product[B](p2: => Parser[B]): Parser[(A, B)] = {
         for {
@@ -110,8 +111,8 @@ object chapter9 {
       def !**[B, C](p2: Parser[(B, C)]): Parser[(A, C)] = {
         for {
           a <- p
-          (_, c) <- p2
-        } yield (a, c)
+          bc <- p2
+        } yield (a, bc._2)
       }
 
 //      def *![B](p2: Parser[B]): Parser[B] = (p ** p2).flatMap(_ => p2) // jauciu blogai. Discard is kaires
@@ -131,59 +132,153 @@ object chapter9 {
 
       def label[A](msg: String): Parser[A] = ???
 
-      def scope[A](msg: String): Parser[A] = ???
-
       def attempt[A](p: Parser[A]): Parser[A] = ???
     }
+//    object Laws {
+//      val stringList: SGen[List[String]] = SGen.listOf(Gen.alphabeticString(10))
+//
+//      def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop =
+//        Prop.forAll(in.unsized)(str => run(p1)(str) == run(p2)(str))
+//
+//      def stringTest(f: String => Boolean): Prop = {
+//        Prop.forAll(stringList)(list => list.count(f) == list.size)
+//      }
+//
+//      def mapLaw[A](p: Parser[A])(in: Gen[String]): Prop =
+//        equal(p, p.map(identity))(in)
+//
+//      def unitLaw[A](a: A): Prop =
+//        stringTest(str => unit(a)(str) match {
+//          case Success(a, _) => true
+//          case _ => false
+//        })
+//
+//      def manyLaw: Prop =
+//        stringTest(str => char('a').many.slice.map(_.length)(str) match {
+//          case Success(3, _) => true
+//          case _ => false
+//        })
+//
+//      def many1Law: Prop =
+//        stringTest(str => char('0').many1(str) match {
+//          case Failure(_, _) => true
+//          case _ => false
+//        })
+//
+//      def labelLaw[A](p: Parser[A], inputs: SGen[String]): Prop =
+//        Prop.forAll(inputs ** Gen.alphabeticString(10).unsized) { case (input, msg) =>
+//          run(p.label(msg))(input) match {
+//            case Failure(e, _) => errorMessage(e) == msg
+//            case _ => true
+//          }
+//        }
+//    }
+  }
 
-    object Laws {
-      val stringList: SGen[List[String]] = SGen.listOf(Gen.alphabeticString(10))
-
-      def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop =
-        Prop.forAll(in.unsized)(str => run(p1)(str) == run(p2)(str))
-
-      def stringTest(f: String => Boolean): Prop = {
-        Prop.forAll(stringList)(list => list.count(f) == list.size)
-      }
-
-      def mapLaw[A](p: Parser[A])(in: Gen[String]): Prop =
-        equal(p, p.map(identity))(in)
-
-      def unitLaw[A](a: A): Prop =
-        stringTest(str => unit(a)(str) == Right(a))
-
-      def manyLaw: Prop =
-        stringTest(str => char('a').many.slice.map(_.length)(str) == Right(3))
-
-      def many1Law: Prop =
-        stringTest(str => char('0').many1(str) match {
-          case Left(_) => true
-          case _ => false
-        })
-
-      def productLaw: Prop = {
-        Prop.asProp {
-          val p = char('a')
-          (p ** p ** p)("aaa") == p.many("aaa")
-        }
-      }
-
-      def listOfNLaw: Prop = {
-        Prop.asProp(listOfN(3, "ab" | "cad")("ababcad") == Right("ababcad"))
-        Prop.asProp(listOfN(3, "ab" | "cad")("cadabab") == Right("cadabab"))
-        Prop.asProp(listOfN(3, "ab" | "cad")("ababab") == Right("ababab"))
-      }
-
-      def labelLaw[A](p: Parser[A], inputs: SGen[String]): Prop =
-        Prop.forAll(inputs ** Gen.alphabeticString(10).unsized) { case (input, msg) =>
-          run(p.label(msg))(input) match {
-            case Left(e) => errorMessage(e) == msg
-            case _ => true
-          }
-        }
+  case class Location(input: String, offset: Int = 0) {
+    lazy val line: Int = input.slice(0, offset + 1).count(_ == '\n') + 1
+    lazy val col: Int = input.slice(0, offset + 1).lastIndexOf('\n') match {
+      case -1 => offset + 1
+      case lineStart => offset - lineStart
     }
 
-    sealed trait JSON
+    def toError(msg: String): ParseError =
+      ParseError(List((this, msg)))
+
+    def advanceBy(n: Int): Location =
+      copy(offset = offset + n)
+  }
+
+//  def errorLocation(e: ParseError): Location = ???
+//  def errorMessage(e: ParseError): String = ???
+
+  case class ParseError(stack: List[(Location, String)]) {
+    def push(loc: Location, msg: String): ParseError =
+      copy(stack = (loc, msg) :: stack)
+
+    def label[A](s: String): ParseError =
+      ParseError(latestLoc.map((_, s)).toList)
+
+    def latestLoc: Option[Location] =
+      latest.map(_._1)
+
+    def latest: Option[(Location,String)] =
+      stack.lastOption
+  }
+
+  type Parser[+A] = Location => Result[A]
+
+  trait Result[+A] {
+    def mapError(f: ParseError => ParseError): Result[A] = this match {
+      case Failure(e, isCommitted) => Failure(f(e), isCommitted)
+      case _ => this
+    }
+
+    def addCommit(isCommitted: Boolean): Result[A] = this match {
+      case Failure(err, commit) => Failure(err, commit || isCommitted)
+      case _ => this
+    }
+
+    def uncommit: Result[A] = this match {
+      case Failure(e, true) => Failure(e, false)
+      case _ => this
+    }
+
+    def advanceSuccess(n: Int): Result[A] = this match {
+      case Success(a, m) => Success(a, n + m)
+      case _ => this
+    }
+  }
+  case class Success[+A](get: A, charsConsumed: Int) extends Result[A]
+  case class Failure(get: ParseError, isCommitted: Boolean) extends Result[Nothing]
+
+  object MyParsers extends Parsers[Parser] {
+    override implicit def regex(r: Regex): Parser[String] = (loc: Location) => {
+      r.findPrefixOf(loc.input.substring(loc.offset)) match {
+        case None => Failure(loc.toError("couldnt match regex: " + r.toString), false)
+        case Some(str) => Success(str, str.length)
+      }
+    }
+
+    override implicit def string(s: String): Parser[String] = {
+      label("couldnt find string: " +  s)(s.r)
+    }
+
+    override def slice[A](p: Parser[A]): Parser[String] = (loc: Location) => {
+      val startOffset = loc.offset
+      p(loc) match {
+        case Success(_, charsConsumed) => Success(loc.input.substring(startOffset, startOffset + charsConsumed), charsConsumed)
+        case fail @ Failure(_, _) => fail
+      }
+    }
+
+    def scope[A](msg: String)(p: Parser[A]): Parser[A] = {
+      loc => p(loc).mapError(_.push(loc, msg))
+    }
+
+    def label[A](msg: String)(p: Parser[A]): Parser[A] =
+      loc => p(loc).mapError(_.label(msg))
+
+    def attempt[A](p: Parser[A]): Parser[A] =
+      loc => p(loc).uncommit
+
+    def or[A](x: Parser[A], y: => Parser[A]): Parser[A] =
+      loc => x(loc) match {
+        case Failure(_, false) => y(loc)
+        case r => r
+      }
+
+    def flatMap[A,B](f: Parser[A])(g: A => Parser[B]): Parser[B] =
+      loc => f(loc) match {
+        case Success(a, n) => g(a)(loc.advanceBy(n))
+          .addCommit(n != 0)
+          .advanceSuccess(n)
+        case err @ Failure(_,_) => err
+      }
+
+    override implicit def run[A](p: Parser[A])(input: String): Result[A] = ???
+
+    sealed trait JSON extends Product with Serializable
 
     object JSON {
       case object JNull extends JSON
@@ -267,12 +362,12 @@ object chapter9 {
         val jArrayParser: Parser[JArray] = {
           (
             squareBracketOpen
-            *! spacesOptional
-            *! jArrayElemParser.manySeparatedBy(",")
-            !* spacesOptional
-            !* squareBracketClose
-          )
-          .map(list => JArray(list.toIndexedSeq))
+              *! spacesOptional
+              *! jArrayElemParser.manySeparatedBy(",")
+              !* spacesOptional
+              !* squareBracketClose
+            )
+            .map(list => JArray(list.toIndexedSeq))
         }
 
         val jObjectElemParser: Parser[(String, JSON)] = {
@@ -283,47 +378,35 @@ object chapter9 {
           // ** grazina (a, b), bet key !* (a, b) == key
           // reikia, kad grazintu (key, b)
           (spacesOptional *! key !** betweenKeyValue ** value) //netaip !* veikia
-          .map { case (key, value) => (key.get, value) }
+            .map { case (key, value) => (key.get, value) }
 
           // sitas (JString, Json) grazina
-//        spacesOptional *! key !** betweenKeyValue ** value //netaip !* veikia
+          //        spacesOptional *! key !** betweenKeyValue ** value //netaip !* veikia
         }
 
         val jObjectParser: Parser[JObject] = { // nuo spaces patikrint
           (
             curlyBracketOpen
-            *! spacesOptional
-            *! jObjectElemParser.manySeparatedBy(",")
-            !* curlyBracketClose
-          )
-          .map(list => JObject(Map(list: _*)))
+              *! spacesOptional
+              *! jObjectElemParser.manySeparatedBy(",")
+              !* curlyBracketClose
+            )
+            .map(list => JObject(Map(list: _*)))
         }
+
+        jObjectParser | jArrayParser | jNullParser | jBoolParser | jNumberParser | jStringParser
       }
     }
   }
 
-  case class Location(input: String, offset: Int = 0) {
-    lazy val line: Int = input.slice(0, offset + 1).count(_ == '\n') + 1
-    lazy val col: Int = input.slice(0, offset + 1).lastIndexOf('\n') match {
-      case -1 => offset + 1
-      case lineStart => offset - lineStart
-    }
-
-    def toError(msg: String): ParseError =
-      ParseError(List((this, msg)))
-  }
-
-  def errorLocation(e: ParseError): Location = ???
-  def errorMessage(e: ParseError): String = ???
-
-  case class ParseError(stack: List[(Location, String)])
-
-  type Parser[+A] = Location => Result[A]
-  trait Result[+A]
-  case class Success[+A](get: A, charsConsumed: Int) extends Result[A]
-  case class Failure(get: ParseError) extends Result[Nothing]
-
   def test: Unit = {
-    val exampleJSON = " { \"xd\": \"xD\" } "
+    val exampleJSON = Location(" { \"xd\": \"xD\" } ")
+
+    val x = MyParsers.JSON.parser(exampleJSON)
+    println(x)
+    // "xd123 LOL"
+    // (char('x') ** string("123")).slice == string("x123")
+    // returnina ('x', "123") ir ("x123")
+    // nesucceedins nes inputas nevisiskai atitinka patterna (ilgesnis " LOL" simboliais)
   }
 }
