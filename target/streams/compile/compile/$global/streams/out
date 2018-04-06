@@ -1,7 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0mC:\work\scala\fp-in-scala\src\main\scala\rainysjurgis\chapter6_newPC.scala:80:7: illegal start of simple pattern[0m
-[0m[[0m[31merror[0m] [0m[0m      }[0m
+[0m[[0m[31merror[0m] [0m[0mC:\Users\JurgisRainys\Desktop\Functional-Programming-in-Scala\fp-knyga\src\main\scala\rainysjurgis\chapter3.scala:258:7: not found: value Tree[0m
+[0m[[0m[31merror[0m] [0m[0m      Tree.iterateTree(this)(_.toString)(_ + " :: " + _)[0m
 [0m[[0m[31merror[0m] [0m[0m      ^[0m
-[0m[[0m[31merror[0m] [0m[0mC:\work\scala\fp-in-scala\src\main\scala\rainysjurgis\chapter6_newPC.scala:81:5: illegal start of simple expression[0m
-[0m[[0m[31merror[0m] [0m[0m    }[0m
-[0m[[0m[31merror[0m] [0m[0m    ^[0m
-[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m

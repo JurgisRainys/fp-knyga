@@ -94,7 +94,7 @@ object chapter8 {
     }
 
     def fxInt[A](start: Int = 0, stopExclusive: Int = 100): Gen[A => Int] = {
-      unit().map(_ => (arg: A) => {
+      unit((arg: A) => {
         val hash = arg.hashCode
         val difference = stopExclusive - start
         (hash % difference) + start

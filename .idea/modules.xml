@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/fp-in-scala.iml" filepath="$PROJECT_DIR$/.idea/modules/fp-in-scala.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/fp-in-scala-build.iml" filepath="$PROJECT_DIR$/.idea/modules/fp-in-scala-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/fp-knyga.iml" filepath="$PROJECT_DIR$/.idea/modules/fp-knyga.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/fp-knyga-build.iml" filepath="$PROJECT_DIR$/.idea/modules/fp-knyga-build.iml" />
     </modules>
   </component>
 </project>

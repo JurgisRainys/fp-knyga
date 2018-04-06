@@ -10,7 +10,6 @@
             <option value="$PROJECT_DIR$/project" />
           </set>
         </option>
-        <option name="resolveSbtClassifiers" value="true" />
         <option name="sbtVersion" value="1.0.3" />
         <option name="useSbtShell" value="true" />
       </SbtProjectSettings>

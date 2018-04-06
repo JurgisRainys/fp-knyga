@@ -249,83 +249,79 @@ object chapter3 {
   }
 
   sealed trait Tree[+A] {
-    def isEmptyTree: Boolean = this match {
-      case EmptyTree => true
-      case _ => false
-    }
-
-    def printTree(): String = {
-      Tree.iterateTree(this)(_.toString)(_ + " :: " + _)
-    }
+//    def printTree(): String = {
+//      Tree.iterateTree(this)(_.toString)(_ + " :: " + _)
+//    }
   }
-  case object EmptyTree extends Tree[Nothing]
   case class Leaf[A](value: A) extends Tree[A]
   case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
+//  case object EmptyTree extends Tree[Nothing]
 
-  object Tree {
-    @tailrec
-    def generateTree[A](treeList: List[Tree[A]]): Tree[A] = {
-      treeList match {
-        case Cons(_, Cons(_, _)) => generateTree(makeBranches(treeList, List.empty[Tree[A]]))
-        case Cons(h, _) => h
-        case Nil => EmptyTree
-      }
-    }
-
-    @tailrec
-    def makeBranches[A](treeList: List[Tree[A]], resultBranches: List[Tree[A]]): List[Tree[A]] = {
-      treeList match {
-        case Cons(a1, Cons(a2, tail)) => makeBranches(tail, Cons(Branch(a1, a2), resultBranches))
-        case Cons(a1, Nil) => Cons(Branch(a1, EmptyTree), resultBranches)
-        case Nil => resultBranches
-      }
-    }
-
-    def apply[A](as: A*): Tree[A] = {
-      if (as.isEmpty) EmptyTree
-      else {
-        val leaves = List.map(List.listFromSeq(as))(Leaf(_))
-        generateTree(leaves)
-      }
-    }
-
-    def iterateTree[A, B](tree: Tree[A])(mapper: A => B)(joiner: (B, B) => B): B = {
-      def loop(tree: Tree[A]): B = tree match {
-        case Leaf(x) => mapper(x)
-        case Branch(EmptyTree, right) => loop(right)
-        case Branch(left, EmptyTree) => loop(left)
-        case Branch(left, right) => joiner(loop(left), loop(right))
-      }
-
-      loop(tree)
-    }
-
-    def size[A](tree: Tree[A]): Int = {
-      iterateTree(tree)(_ => 1)((x, y) => x + y)
-    }
-
-    def maximum(tree: Tree[Int]): Int = {
-      iterateTree(tree)(identity)((x, y) => if (x > y) x else y)
-    }
-
-    def depth[A](tree: Tree[A]): Int = {
-      iterateTree(tree)(_ => 0)((x, y) => (if (x > y) x else y) + 1)
-    }
-
-    def map[A, B](tree: Tree[A])(f: A => B): Tree[B] = {
-      iterateTree(tree)(x => Tree(f(x)))(Branch.apply)
-    }
-
-    def test2() = {
-      val t0 = Tree.apply(1, 2, 3)
-      val t1 = Tree.apply(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-      val t2 = Tree.apply(1, 12, 3, 4, 5, 6, 7, 8, 9, 10, 2, 6, 4, 6, 11, 2, 6)
-//      println(Tree.maximum(t2))
-//      println(Tree.size(t1))
-//      println(Tree.size2(t1))
-      //println(Tree.depth(t2))
-//      println(t0.printTree())
-//      println(Tree.map(t0)(_ + 10).printTree())
-    }
-  }
+//  object Tree {
+//    @tailrec
+//    def generateTree[A](treeList: List[Tree[A]]): Tree[A] = {
+//      treeList match {
+//        case Cons(_, Cons(_, _)) => generateTree(makeBranches(treeList, List.empty[Tree[A]]))
+//        case Cons(h, _) => h
+//        case Nil => EmptyTree
+//      }
+//    }
+//
+//    @tailrec
+//    def makeBranches[A](treeList: List[Tree[A]], resultBranches: List[Tree[A]]): List[Tree[A]] = {
+//      treeList match {
+//        case Cons(a1, Cons(a2, tail)) => makeBranches(tail, Cons(Branch(a1, a2), resultBranches))
+//        case Cons(a1, Nil) => Cons(Branch(a1, EmptyTree), resultBranches)
+//        case Nil => resultBranches
+//      }
+//    }
+//
+//    def apply[A](as: A*): Tree[A] = {
+//      if (as.isEmpty) EmptyTree
+//      else {
+//        val leaves = List.map(List.listFromSeq(as))(Leaf(_))
+//        generateTree(leaves)
+//      }
+//    }
+//
+//    def iterateTree[A, B](tree: Tree[A])(mapper: A => B)(joiner: (B, B) => B): B = {
+//      def loop(tree: Tree[A]): B = tree match {
+//        case EmptyTree => ???
+//        case Leaf(x) => mapper(x)
+//        case Branch(EmptyTree, right) => loop(right)
+//        case Branch(left, EmptyTree) => loop(left)
+//        case Branch(left, right) => joiner(loop(left), loop(right))
+//      }
+//
+//      loop(tree)
+//    }
+//
+//    def size[A](tree: Tree[A]): Int = {
+//      iterateTree(tree)(_ => 1)((x, y) => x + y)
+//    }
+//
+//    def maximum(tree: Tree[Int]): Int = {
+//      iterateTree(tree)(identity)((x, y) => if (x > y) x else y)
+//    }
+//
+//    def depth[A](tree: Tree[A]): Int = {
+//      iterateTree(tree)(_ => 0)((x, y) => (if (x > y) x else y) + 1)
+//    }
+//
+//    def map[A, B](tree: Tree[A])(f: A => B): Tree[B] = {
+//      iterateTree(tree)(x => Tree(f(x)))(Branch.apply)
+//    }
+//
+//    def test2() = {
+//      val t0 = Tree.apply(1, 2, 3)
+//      val t1 = Tree.apply(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+//      val t2 = Tree.apply(1, 12, 3, 4, 5, 6, 7, 8, 9, 10, 2, 6, 4, 6, 11, 2, 6)
+////      println(Tree.maximum(t2))
+////      println(Tree.size(t1))
+////      println(Tree.size2(t1))
+//      //println(Tree.depth(t2))
+////      println(t0.printTree())
+////      println(Tree.map(t0)(_ + 10).printTree())
+//    }
+//  }
 }
