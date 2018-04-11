@@ -8,3 +8,9 @@ console
 all {file:/C:/Users/JurgisRainys/Desktop/Functional-Programming-in-Scala/fp-knyga/}fp-knyga/products {file:/C:/Users/JurgisRainys/Desktop/Functional-Programming-in-Scala/fp-knyga/}fp-knyga/test:products
 run
 all {file:/C:/Users/JurgisRainys/Desktop/Functional-Programming-in-Scala/fp-knyga/}fp-knyga/products {file:/C:/Users/JurgisRainys/Desktop/Functional-Programming-in-Scala/fp-knyga/}fp-knyga/test:products
+;reload; set _root_.org.jetbrains.sbt.StructureKeys.sbtStructureOptions in Global := "download resolveClassifiers" ;*/*:dumpStructureTo C:/Users/JurgisRainys/AppData/Local/Temp/sbt-structure.xml; session clear-all
+all {file:/C:/Users/JurgisRainys/Desktop/Functional-Programming-in-Scala/fp-knyga/}fp-knyga/products {file:/C:/Users/JurgisRainys/Desktop/Functional-Programming-in-Scala/fp-knyga/}fp-knyga/test:products
+;reload; set _root_.org.jetbrains.sbt.StructureKeys.sbtStructureOptions in Global := "download resolveClassifiers" ;*/*:dumpStructureTo C:/Users/JurgisRainys/AppData/Local/Temp/sbt-structure.xml; session clear-all
+all {file:/C:/Users/JurgisRainys/Desktop/Functional-Programming-in-Scala/fp-knyga/}fp-knyga/products {file:/C:/Users/JurgisRainys/Desktop/Functional-Programming-in-Scala/fp-knyga/}fp-knyga/test:products
+;reload; set _root_.org.jetbrains.sbt.StructureKeys.sbtStructureOptions in Global := "download resolveClassifiers" ;*/*:dumpStructureTo C:/Users/JurgisRainys/AppData/Local/Temp/sbt-structure.xml; session clear-all
+all {file:/C:/Users/JurgisRainys/Desktop/Functional-Programming-in-Scala/fp-knyga/}fp-knyga/products {file:/C:/Users/JurgisRainys/Desktop/Functional-Programming-in-Scala/fp-knyga/}fp-knyga/test:products

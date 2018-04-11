@@ -2,41 +2,28 @@
 [0m[[0m[0mdebug[0m] [0m[0mInitial source changes: [0m
 [0m[[0m[0mdebug[0m] [0m[0m	removed:Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0m	added: Set()[0m
-[0m[[0m[0mdebug[0m] [0m[0m	modified: Set(C:\Users\JurgisRainys\Desktop\Functional-Programming-in-Scala\fp-knyga\src\main\scala\rainysjurgis\chapter9.scala)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	modified: Set(C:\Users\JurgisRainys\Desktop\Functional-Programming-in-Scala\fp-knyga\src\main\scala\rainysjurgis\chapter10.scala)[0m
 [0m[[0m[0mdebug[0m] [0m[0mInvalidated products: Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0mExternal API changes: API Changes: Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0mModified binary dependencies: Set()[0m
-[0m[[0m[0mdebug[0m] [0m[0mInitial directly invalidated classes: Set(rainysjurgis.chapter9.Success, rainysjurgis.chapter9.Parsers.JSON.JBool, rainysjurgis.chapter9.Failure, rainysjurgis.chapter9.ParseError, rainysjurgis.chapter9, rainysjurgis.chapter9.Parsers.JSON.JString, rainysjurgis.chapter9.Result, rainysjurgis.chapter9.Parsers, rainysjurgis.chapter9.Location, rainysjurgis.chapter9.MyParsers, rainysjurgis.chapter9.Parsers.ParserOps, rainysjurgis.chapter9.Parsers.values, rainysjurgis.chapter9.Parsers.JSON.JObject, rainysjurgis.chapter9.Parsers.JSON.JNumber, rainysjurgis.chapter9.Parsers.JSON.JNull, rainysjurgis.chapter9.Parsers.JSON.JArray, rainysjurgis.chapter9.Parsers.JSON)[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial directly invalidated classes: Set(rainysjurgis.chapter10.Monoid, rainysjurgis.chapter10.OrderableSeq, rainysjurgis.chapter10.WC, rainysjurgis.chapter10.Stub, rainysjurgis.chapter10, rainysjurgis.chapter10.Part)[0m
 [0m[[0m[0mdebug[0m] [0m[0m[0m
 [0m[[0m[0mdebug[0m] [0m[0mSources indirectly invalidated by:[0m
 [0m[[0m[0mdebug[0m] [0m[0m	product: Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0m	binary dep: Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0m	external source: Set()[0m
-[0m[[0m[0mdebug[0m] [0m[0mAll initially invalidated classes: Set(rainysjurgis.chapter9.Success, rainysjurgis.chapter9.Parsers.JSON.JBool, rainysjurgis.chapter9.Failure, rainysjurgis.chapter9.ParseError, rainysjurgis.chapter9, rainysjurgis.chapter9.Parsers.JSON.JString, rainysjurgis.chapter9.Result, rainysjurgis.chapter9.Parsers, rainysjurgis.chapter9.Location, rainysjurgis.chapter9.MyParsers, rainysjurgis.chapter9.Parsers.ParserOps, rainysjurgis.chapter9.Parsers.values, rainysjurgis.chapter9.Parsers.JSON.JObject, rainysjurgis.chapter9.Parsers.JSON.JNumber, rainysjurgis.chapter9.Parsers.JSON.JNull, rainysjurgis.chapter9.Parsers.JSON.JArray, rainysjurgis.chapter9.Parsers.JSON)[0m
-[0m[[0m[0mdebug[0m] [0m[0mAll initially invalidated sources:Set(C:\Users\JurgisRainys\Desktop\Functional-Programming-in-Scala\fp-knyga\src\main\scala\rainysjurgis\chapter9.scala)[0m
+[0m[[0m[0mdebug[0m] [0m[0mAll initially invalidated classes: Set(rainysjurgis.chapter10.Monoid, rainysjurgis.chapter10.OrderableSeq, rainysjurgis.chapter10.WC, rainysjurgis.chapter10.Stub, rainysjurgis.chapter10, rainysjurgis.chapter10.Part)[0m
+[0m[[0m[0mdebug[0m] [0m[0mAll initially invalidated sources:Set(C:\Users\JurgisRainys\Desktop\Functional-Programming-in-Scala\fp-knyga\src\main\scala\rainysjurgis\chapter10.scala)[0m
 [0m[[0m[0minfo[0m] [0m[0mCompiling 1 Scala source to C:\Users\JurgisRainys\Desktop\Functional-Programming-in-Scala\fp-knyga\target\scala-2.12\classes ...[0m
 [0m[[0m[0mdebug[0m] [0m[0mGetting org.scala-sbt:compiler-bridge_2.12:1.0.3:compile for Scala 2.12.4[0m
 [0m[[0m[0mdebug[0m] [0m[0mGetting org.scala-sbt:compiler-bridge_2.12:1.0.3:compile for Scala 2.12.4[0m
-[0m[[0m[0mdebug[0m] [0m[0m[zinc] Running cached compiler 2d531f82 for Scala compiler version 2.12.4[0m
+[0m[[0m[0mdebug[0m] [0m[0m[zinc] Running cached compiler 1178a464 for Scala compiler version 2.12.4[0m
 [0m[[0m[0mdebug[0m] [0m[0m[zinc] The Scala compiler is invoked with:[0m
-[0m[[0m[0mdebug[0m] [0m[0m	-deprecation[0m
-[0m[[0m[0mdebug[0m] [0m[0m	-encoding[0m
-[0m[[0m[0mdebug[0m] [0m[0m	utf-8[0m
-[0m[[0m[0mdebug[0m] [0m[0m	-explaintypes[0m
-[0m[[0m[0mdebug[0m] [0m[0m	-feature[0m
-[0m[[0m[0mdebug[0m] [0m[0m	-language:existentials[0m
-[0m[[0m[0mdebug[0m] [0m[0m	-language:experimental.macros[0m
-[0m[[0m[0mdebug[0m] [0m[0m	-language:higherKinds[0m
-[0m[[0m[0mdebug[0m] [0m[0m	-language:implicitConversions[0m
-[0m[[0m[0mdebug[0m] [0m[0m	-unchecked[0m
-[0m[[0m[0mdebug[0m] [0m[0m	-Xcheckinit[0m
-[0m[[0m[0mdebug[0m] [0m[0m	-Xfatal-warnings[0m
-[0m[[0m[0mdebug[0m] [0m[0m	-Xfuture[0m
 [0m[[0m[0mdebug[0m] [0m[0m	-bootclasspath[0m
 [0m[[0m[0mdebug[0m] [0m[0m	C:\Program Files\Java\jdk1.8.0_161\jre\lib\resources.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\rt.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\sunrsasign.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\jsse.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\jce.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\charsets.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\jfr.jar;C:\Program Files\Java\jdk1.8.0_161\jre\classes;C:\Users\JurgisRainys\.sbt\boot\scala-2.12.4\lib\scala-library.jar[0m
 [0m[[0m[0mdebug[0m] [0m[0m	-classpath[0m
 [0m[[0m[0mdebug[0m] [0m[0m	C:\Users\JurgisRainys\Desktop\Functional-Programming-in-Scala\fp-knyga\target\scala-2.12\classes[0m
-[0m[[0m[0mdebug[0m] [0m[0mScala compilation took 1.397041359 s[0m
+[0m[[0m[0mdebug[0m] [0m[0mScala compilation took 0.881713255 s[0m
 [0m[[0m[0minfo[0m] [0m[0mDone compiling.[0m
 [0m[[0m[0mdebug[0m] [0m[0mNew invalidations:[0m
 [0m[[0m[0mdebug[0m] [0m[0m	Set()[0m

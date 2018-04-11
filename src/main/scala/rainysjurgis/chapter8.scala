@@ -185,6 +185,7 @@ object chapter8 {
   sealed trait Result {
     def isFalsified: Boolean
   }
+
   object Result {
     case object Passed extends Result {
       def isFalsified = false
