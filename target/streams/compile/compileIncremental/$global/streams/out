@@ -6,25 +6,45 @@
 [0m[[0m[0mdebug[0m] [0m[0mInvalidated products: Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0mExternal API changes: API Changes: Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0mModified binary dependencies: Set()[0m
-[0m[[0m[0mdebug[0m] [0m[0mInitial directly invalidated classes: Set(rainysjurgis.chapter10.Monoid, rainysjurgis.chapter10.OrderableSeq, rainysjurgis.chapter10.WC, rainysjurgis.chapter10.Stub, rainysjurgis.chapter10, rainysjurgis.chapter10.Part)[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial directly invalidated classes: Set(rainysjurgis.chapter10.FoldableSeq, rainysjurgis.chapter10.Foldable, rainysjurgis.chapter10.FoldableList, rainysjurgis.chapter10.Tree, rainysjurgis.chapter10.Leaf, rainysjurgis.chapter10.FoldableOption, rainysjurgis.chapter10.Monoid, rainysjurgis.chapter10.OrderableSeq, rainysjurgis.chapter10.FoldableTree, rainysjurgis.chapter10.WC, rainysjurgis.chapter10.Stub, rainysjurgis.chapter10, rainysjurgis.chapter10.Branch, rainysjurgis.chapter10.Part, rainysjurgis.chapter10.FoldableStream)[0m
 [0m[[0m[0mdebug[0m] [0m[0m[0m
 [0m[[0m[0mdebug[0m] [0m[0mSources indirectly invalidated by:[0m
 [0m[[0m[0mdebug[0m] [0m[0m	product: Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0m	binary dep: Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0m	external source: Set()[0m
-[0m[[0m[0mdebug[0m] [0m[0mAll initially invalidated classes: Set(rainysjurgis.chapter10.Monoid, rainysjurgis.chapter10.OrderableSeq, rainysjurgis.chapter10.WC, rainysjurgis.chapter10.Stub, rainysjurgis.chapter10, rainysjurgis.chapter10.Part)[0m
+[0m[[0m[0mdebug[0m] [0m[0mAll initially invalidated classes: Set(rainysjurgis.chapter10.FoldableSeq, rainysjurgis.chapter10.Foldable, rainysjurgis.chapter10.FoldableList, rainysjurgis.chapter10.Tree, rainysjurgis.chapter10.Leaf, rainysjurgis.chapter10.FoldableOption, rainysjurgis.chapter10.Monoid, rainysjurgis.chapter10.OrderableSeq, rainysjurgis.chapter10.FoldableTree, rainysjurgis.chapter10.WC, rainysjurgis.chapter10.Stub, rainysjurgis.chapter10, rainysjurgis.chapter10.Branch, rainysjurgis.chapter10.Part, rainysjurgis.chapter10.FoldableStream)[0m
 [0m[[0m[0mdebug[0m] [0m[0mAll initially invalidated sources:Set(C:\Users\JurgisRainys\Desktop\Functional-Programming-in-Scala\fp-knyga\src\main\scala\rainysjurgis\chapter10.scala)[0m
 [0m[[0m[0minfo[0m] [0m[0mCompiling 1 Scala source to C:\Users\JurgisRainys\Desktop\Functional-Programming-in-Scala\fp-knyga\target\scala-2.12\classes ...[0m
 [0m[[0m[0mdebug[0m] [0m[0mGetting org.scala-sbt:compiler-bridge_2.12:1.0.3:compile for Scala 2.12.4[0m
 [0m[[0m[0mdebug[0m] [0m[0mGetting org.scala-sbt:compiler-bridge_2.12:1.0.3:compile for Scala 2.12.4[0m
-[0m[[0m[0mdebug[0m] [0m[0m[zinc] Running cached compiler 1178a464 for Scala compiler version 2.12.4[0m
+[0m[[0m[0mdebug[0m] [0m[0m[zinc] Running cached compiler 75278645 for Scala compiler version 2.12.4[0m
 [0m[[0m[0mdebug[0m] [0m[0m[zinc] The Scala compiler is invoked with:[0m
 [0m[[0m[0mdebug[0m] [0m[0m	-bootclasspath[0m
 [0m[[0m[0mdebug[0m] [0m[0m	C:\Program Files\Java\jdk1.8.0_161\jre\lib\resources.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\rt.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\sunrsasign.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\jsse.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\jce.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\charsets.jar;C:\Program Files\Java\jdk1.8.0_161\jre\lib\jfr.jar;C:\Program Files\Java\jdk1.8.0_161\jre\classes;C:\Users\JurgisRainys\.sbt\boot\scala-2.12.4\lib\scala-library.jar[0m
 [0m[[0m[0mdebug[0m] [0m[0m	-classpath[0m
 [0m[[0m[0mdebug[0m] [0m[0m	C:\Users\JurgisRainys\Desktop\Functional-Programming-in-Scala\fp-knyga\target\scala-2.12\classes[0m
-[0m[[0m[0mdebug[0m] [0m[0mScala compilation took 0.881713255 s[0m
+[0m[[0m[0mdebug[0m] [0m[0mScala compilation took 2.830763607 s[0m
 [0m[[0m[0minfo[0m] [0m[0mDone compiling.[0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidating (transitively) by inheritance from rainysjurgis.chapter10.Monoid...[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial set of included nodes: Set(rainysjurgis.chapter10.Monoid)[0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidated by transitive inheritance dependency: Set(rainysjurgis.chapter10.Monoid)[0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidate by local inheritance: rainysjurgis.chapter10.Monoid -> Set(rainysjurgis.chapter10)[0m
+[0m[[0m[0mdebug[0m] [0m[0mChange NamesChange(rainysjurgis.chapter10.Monoid,ModifiedNames(changes = UsedName(Monoid,[Default]))) invalidates 2 classes due to The rainysjurgis.chapter10.Monoid has the following regular definitions changed:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	UsedName(Monoid,[Default]).[0m
+[0m[[0m[0mdebug[0m] [0m[0m	> by transitive inheritance: Set(rainysjurgis.chapter10.Monoid)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	> by local inheritance: Set(rainysjurgis.chapter10)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	> [0m
+[0m[[0m[0mdebug[0m] [0m[0m        [0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidating (transitively) by inheritance from rainysjurgis.chapter10...[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial set of included nodes: Set(rainysjurgis.chapter10)[0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidated by transitive inheritance dependency: Set(rainysjurgis.chapter10)[0m
+[0m[[0m[0mdebug[0m] [0m[0mNone of the modified names appears in source file of rainysjurgis.Main. This dependency is not being considered for invalidation.[0m
+[0m[[0m[0mdebug[0m] [0m[0mChange NamesChange(rainysjurgis.chapter10,ModifiedNames(changes = UsedName(functionMonoid,[Default]), UsedName(mapMergeMonoid,[Default]), UsedName(productMonoid,[Default]), UsedName(bag,[Default]))) invalidates 1 classes due to The rainysjurgis.chapter10 has the following regular definitions changed:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	UsedName(functionMonoid,[Default]), UsedName(mapMergeMonoid,[Default]), UsedName(productMonoid,[Default]), UsedName(bag,[Default]).[0m
+[0m[[0m[0mdebug[0m] [0m[0m	> by transitive inheritance: Set(rainysjurgis.chapter10)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	> [0m
+[0m[[0m[0mdebug[0m] [0m[0m	> [0m
+[0m[[0m[0mdebug[0m] [0m[0m        [0m
 [0m[[0m[0mdebug[0m] [0m[0mNew invalidations:[0m
 [0m[[0m[0mdebug[0m] [0m[0m	Set()[0m
 [0m[[0m[0mdebug[0m] [0m[0mInitial set of included nodes: Set()[0m
